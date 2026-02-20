@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kesh8Four Music</title>
+
+  <link rel="icon" href="data:,">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Reads embedded MP3 cover art (ID3 tags) -->
+  <script src="https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js"></script>
+
+  <style>
+    :root {
+      --primary-cyan: #00d4ff;
+      --deep-blue: #0a1628;
+      --electric-pink: #ff006e;
+      --lava-orange: #ff4d00;
+      --ice-blue: #e0f7fa;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #050505;
+      overflow-x: hidden;
+    }
+
+    .font-display { font-family: 'Orbitron', sans-serif; }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0a0a0a; }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--primary-cyan), var(--electric-pink));
+      border-radius: 4px;
+    }
+
+    .glitch { position: relative; animation: glitch-skew 1s infinite linear alternate-reverse; }
+    .glitch::before, .glitch::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+    }
+    .glitch::before {
+      left: 2px;
+      text-shadow: -2px 0 var(--electric-pink);
+      clip: rect(44px, 450px, 56px, 0);
+      animation: glitch-anim 5s infinite linear alternate-reverse;
+    }
+    .glitch::after {
+      left: -2px;
+      text-shadow: -2px 0 var(--primary-cyan);
+      clip: rect(44px, 450px, 56px, 0);
+      animation: glitch-anim2 5s infinite linear alternate-reverse;
+    }
+    @keyframes glitch-anim {
+      0% { clip: rect(12px, 9999px, 52px, 0); }
+      20% { clip: rect(65px, 9999px, 11px, 0); }
+      40% { clip: rect(26px, 9999px, 89px, 0); }
+      60% { clip: rect(78px, 9999px, 14px, 0); }
+      80% { clip: rect(33px, 9999px, 66px, 0); }
+      100% { clip: rect(55px, 9999px, 99px, 0); }
+    }
+    @keyframes glitch-anim2 {
+      0% { clip: rect(65px, 9999px, 99px, 0); }
+      20% { clip: rect(12px, 9999px, 52px, 0); }
+      40% { clip: rect(78px, 9999px, 14px, 0); }
+      60% { clip: rect(33px, 9999px, 66px, 0); }
+      80% { clip: rect(26px, 9999px, 89px, 0); }
+      100% { clip: rect(44px, 9999px, 11px, 0); }
+    }
+
+    .bar {
+      width: 4px;
+      background: linear-gradient(to top, var(--electric-pink), var(--primary-cyan));
+      animation: bounce 1.2s ease-in-out infinite;
+      border-radius: 2px;
+    }
+    .bar:nth-child(odd) { animation-duration: 0.8s; }
+    .bar:nth-child(2n) { animation-duration: 1.1s; }
+    .bar:nth-child(3n) { animation-duration: 1.3s; }
+    .bar:nth-child(4n) { animation-duration: 0.9s; }
+    @keyframes bounce {
+      0%, 100% { height: 10px; }
+      50% { height: 40px; }
+    }
+
+    .album-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    .album-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 40px -10px rgba(0, 212, 255, 0.3);
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #00d4ff 0%, #ff006e 50%, #ff4d00 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .bg-gradient-animate {
+      background: linear-gradient(-45deg, #0a1628, #1a0b2e, #0d1b2a, #1b0a1a);
+      background-size: 400% 400%;
+      animation: gradient-shift 15s ease infinite;
+    }
+    @keyframes gradient-shift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .track-item { transition: all 0.3s ease; }
+    .track-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      padding-left: 1rem;
+    }
+
+    .play-pulse { animation: pulse-glow 2s infinite; }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.7); }
+      50% { box-shadow: 0 0 0 20px rgba(0, 212, 255, 0); }
+    }
+
+    input[type=range] { -webkit-appearance: none; background: transparent; }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 12px; width: 12px;
+      border-radius: 50%;
+      background: var(--primary-cyan);
+      cursor: pointer;
+      margin-top: -4px;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 4px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 2px;
+    }
+
+    /* Hero background blobs must not steal clicks */
+    #top .absolute.inset-0.opacity-30 { pointer-events: none; }
+
+    /* Ensure streaming button is clickable */
+    #streamBtn { position: relative; z-index: 50; pointer-events: auto; }
+
+    /* Modal */
+    #trackMetaModal { display: none; }
+  </style>
+</head>
+
+<body class="bg-gradient-animate text-white min-h-screen">
+
+  <nav class="fixed top-0 w-full z-50 glass border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-pink-600 flex items-center justify-center font-display font-bold text-black text-lg">
+          K8
+        </div>
+        <span class="font-display text-xl tracking-wider font-bold">KESH8FOUR</span>
+      </div>
+
+      <div class="hidden md:flex gap-8 text-sm font-medium text-gray-300">
+        <a href="#albums" class="hover:text-cyan-400 transition-colors">ALBUMS</a>
+        <a href="#tracks" class="hover:text-cyan-400 transition-colors">TRACKS</a>
+        <a href="#about" class="hover:text-cyan-400 transition-colors">ABOUT</a>
+        <a href="#contact" class="hover:text-cyan-400 transition-colors">CONTACT</a>
+      </div>
+
+      <button id="mobileMenuBtn" class="md:hidden text-white" aria-label="Open menu" type="button">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+    </div>
+
+    <div id="mobileMenu" class="md:hidden hidden border-t border-white/10">
+      <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col gap-4 text-sm font-medium text-gray-300">
+        <a href="#albums" class="hover:text-cyan-400 transition-colors">ALBUMS</a>
+        <a href="#tracks" class="hover:text-cyan-400 transition-colors">TRACKS</a>
+        <a href="#about" class="hover:text-cyan-400 transition-colors">ABOUT</a>
+        <a href="#contact" class="hover:text-cyan-400 transition-colors">CONTACT</a>
+      </div>
+    </div>
+  </nav>
+
+  <section id="top" class="relative pt-32 pb-20 px-6 overflow-hidden">
+    <div class="absolute inset-0 opacity-30 pointer-events-none">
+      <div class="absolute top-20 left-10 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>
+      <div class="absolute top-40 right-10 w-72 h-72 bg-pink-600 rounded-full mix-blend-multiply filter blur-3xl animate-pulse delay-1000"></div>
+      <div class="absolute bottom-20 left-1/2 w-96 h-96 bg-orange-500 rounded-full mix-blend-multiply filter blur-3xl animate-pulse delay-2000"></div>
+    </div>
+
+    <div class="max-w-7xl mx-auto relative z-10">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div class="space-y-8">
+          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-cyan-400 text-sm font-medium">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+            NOW STREAMING
+          </div>
+
+          <h1 id="heroTitle" class="font-display text-5xl md:text-7xl font-black leading-tight glitch" data-text="KESH8FOUR MUSIC">
+            KESH8FOUR<br>
+            <span class="gradient-text">MUSIC</span>
+          </h1>
+
+          <p id="heroDesc" class="text-gray-400 text-lg max-w-lg leading-relaxed">
+            Independent label from Birmingham. Select an album below to start listening.
+          </p>
+
+          <div class="flex flex-wrap gap-4">
+            <button id="heroPlayBtn" onclick="heroPlay()" class="play-pulse bg-gradient-to-r from-cyan-500 to-blue-600 px-8 py-4 rounded-full font-bold flex items-center gap-3 hover:scale-105 transition-transform" type="button">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              PLAY NOW
+            </button>
+
+            <a id="streamBtn" href="#" target="_blank" rel="noopener" class="glass px-8 py-4 rounded-full font-bold hover:bg-white/10 transition-colors flex items-center gap-3 hidden">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+              LISTEN EVERYWHERE
+            </a>
+
+            <button class="glass px-8 py-4 rounded-full font-bold hover:bg-white/10 transition-colors flex items-center gap-3" type="button">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+              </svg>
+              SAVE
+            </button>
+          </div>
+
+          <div class="flex gap-8 pt-4">
+            <div>
+              <div class="font-display text-2xl font-bold text-white" id="statTracks">.</div>
+              <div class="text-gray-500 text-sm">TRACKS</div>
+            </div>
+            <div>
+              <div class="font-display text-2xl font-bold text-white" id="statMinutes">.</div>
+              <div class="text-gray-500 text-sm">MINUTES</div>
+            </div>
+            <div>
+              <div id="heroYear" class="font-display text-2xl font-bold text-white">.</div>
+              <div class="text-gray-500 text-sm">RELEASE</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="relative group cursor-pointer" onclick="openAlbumModal(activeAlbumId && activeAlbumId !== 'label' ? activeAlbumId : 'recursive')">
+          <div class="absolute inset-0 bg-gradient-to-r from-cyan-500 to-pink-600 rounded-2xl blur-2xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
+          <div class="relative rounded-2xl overflow-hidden shadow-2xl transform group-hover:scale-[1.02] transition-transform duration-500">
+            <img id="heroImage" src="images/album/kesh8four.png" alt="Kesh8Four" class="w-full aspect-square object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-8">
+              <div class="flex items-center gap-3 text-white font-bold">
+                <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
+                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </div>
+                VIEW ALBUM
+              </div>
+            </div>
+          </div>
+
+          <div class="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-pink-600/20 backdrop-blur border border-pink-500/30 flex items-center justify-center animate-bounce">
+            <span id="heroBadge" class="font-display text-xs font-bold text-pink-400">LABEL</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="flex justify-center gap-1 h-16 items-end opacity-50 mb-12">
+    <div class="bar h-8"></div><div class="bar h-12"></div><div class="bar h-6"></div><div class="bar h-16"></div><div class="bar h-10"></div>
+    <div class="bar h-14"></div><div class="bar h-8"></div><div class="bar h-12"></div><div class="bar h-6"></div><div class="bar h-16"></div>
+    <div class="bar h-10"></div><div class="bar h-14"></div><div class="bar h-8"></div><div class="bar h-12"></div><div class="bar h-6"></div>
+    <div class="bar h-16"></div><div class="bar h-10"></div><div class="bar h-14"></div><div class="bar h-8"></div><div class="bar h-12"></div>
+  </div>
+
+  <section id="albums" class="py-20 px-6">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-6 mb-12">
+        <div>
+          <h2 class="font-display text-4xl font-bold mb-2">DISCOGRAPHY</h2>
+          <p class="text-gray-400">Explore the sonic universe of Kesh8Four</p>
+        </div>
+
+        <div class="flex gap-2">
+          <button onclick="filterAlbums(event, 'all')" class="px-4 py-2 rounded-full glass text-sm hover:bg-white/10 transition-colors bg-white/20" type="button">All</button>
+          <button onclick="filterAlbums(event, 'albums')" class="px-4 py-2 rounded-full glass text-sm hover:bg-white/10 transition-colors" type="button">Albums</button>
+          <button onclick="filterAlbums(event, 'singles')" class="px-4 py-2 rounded-full glass text-sm hover:bg-white/10 transition-colors" type="button">Singles</button>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8" id="albumGrid">
+        <div class="album-card group cursor-pointer" data-category="albums" onclick="openAlbumModal('recursive')">
+          <div class="relative rounded-xl overflow-hidden mb-4">
+            <img src="images/album/recursive-gaze.png" alt="The Recursive Gaze" class="w-full aspect-square object-cover">
+            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+              <button class="w-14 h-14 rounded-full bg-cyan-500 flex items-center justify-center hover:scale-110 transition-transform" onclick="event.stopPropagation(); openAlbumModal('recursive'); heroPlay();" type="button">
+                <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </button>
+            </div>
+            <div class="absolute top-4 right-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur text-xs font-bold text-cyan-400 border border-cyan-500/30">
+              ALBUM
+            </div>
+          </div>
+          <h3 class="font-display text-xl font-bold mb-1 group-hover:text-cyan-400 transition-colors">The Recursive Gaze</h3>
+          <p class="text-gray-500 text-sm mb-3">Cinematic Dark . 2025</p>
+        </div>
+
+        <div class="album-card group cursor-pointer" data-category="albums" onclick="openAlbumModal('sojourn')">
+          <div class="relative rounded-xl overflow-hidden mb-4">
+            <img src="images/album/sojourn.png" alt="Sojourn" class="w-full aspect-square object-cover">
+            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+              <button class="w-14 h-14 rounded-full bg-pink-500 flex items-center justify-center hover:scale-110 transition-transform" onclick="event.stopPropagation(); openAlbumModal('sojourn'); heroPlay();" type="button">
+                <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </button>
+            </div>
+            <div class="absolute top-4 right-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur text-xs font-bold text-pink-400 border border-pink-500/30">
+              ALBUM
+            </div>
+          </div>
+          <h3 class="font-display text-xl font-bold mb-1 group-hover:text-pink-400 transition-colors">SOJOURN</h3>
+          <p class="text-gray-500 text-sm mb-3">World Fusion . 2025</p>
+        </div>
+
+        <div class="album-card group cursor-pointer" data-category="albums" onclick="openAlbumModal('gravelsoulx')">
+          <div class="relative rounded-xl overflow-hidden mb-4">
+            <img src="images/album/gravelsoulx.png" alt="GravelSoul X . Origin Pulse" class="w-full aspect-square object-cover">
+            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+              <button class="w-14 h-14 rounded-full bg-orange-500 flex items-center justify-center hover:scale-110 transition-transform" onclick="event.stopPropagation(); openAlbumModal('gravelsoulx'); heroPlay();" type="button">
+                <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </button>
+            </div>
+            <div class="absolute top-4 right-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur text-xs font-bold text-orange-300 border border-orange-500/30">
+              ALBUM
+            </div>
+          </div>
+          <h3 class="font-display text-xl font-bold mb-1 group-hover:text-orange-300 transition-colors">GravelSoul X</h3>
+          <p class="text-gray-500 text-sm mb-3">Origin Pulse . 2025</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tracks" class="py-20 px-6 bg-black/30">
+    <div class="max-w-5xl mx-auto">
+      <h2 id="tracksTitle" class="font-display text-4xl font-bold mb-12 text-center">FEATURED TRACKS</h2>
+      <div class="space-y-2" id="trackList"></div>
+      <div class="text-center mt-8">
+        <button class="glass px-8 py-3 rounded-full hover:bg-white/10 transition-colors text-sm font-bold tracking-wider" onclick="scrollToTop()" type="button">
+          BACK TO TOP
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section id="about" class="py-20 px-6">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="font-display text-4xl font-bold mb-8">ABOUT KESH8FOUR</h2>
+      <div class="glass rounded-2xl p-8 md:p-12 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-500"></div>
+        <p class="text-gray-300 text-lg leading-relaxed mb-6">
+          Kesh8Four is an independent music project exploring the intersection of cinematic
+          soundscapes and electronic production.
+        </p>
+        <p class="text-gray-400 leading-relaxed">
+          Built as a clean local player first. Streaming links can be added when you decide
+          where the official catalogue lives.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="py-20 px-6 bg-black/30">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="font-display text-4xl font-bold mb-8 text-center">CONTACT</h2>
+      <div class="glass rounded-2xl p-8 md:p-12">
+        <div class="grid md:grid-cols-2 gap-8">
+          <div>
+            <h3 class="font-display text-xl font-bold mb-3">Bookings . Collabs</h3>
+            <p class="text-gray-400 leading-relaxed">
+              For features, sync, licensing, and collabs, use the form or hit the email below.
+            </p>
+
+            <div class="mt-6 space-y-3 text-gray-300">
+              <div class="flex items-center gap-3">
+                <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                <span class="font-medium">Email:</span>
+                <a class="text-cyan-400 hover:text-white transition-colors" href="mailto:info@kesh8four.com">info@kesh8four.com</a>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="w-2 h-2 rounded-full bg-pink-400"></span>
+                <span class="font-medium">Location:</span>
+                <span>Birmingham, UK</span>
+              </div>
+            </div>
+          </div>
+
+          <form onsubmit="handleContact(event)" class="space-y-4">
+            <div>
+              <label class="text-sm text-gray-400">Name</label>
+              <input required class="mt-1 w-full glass rounded-lg px-4 py-3 outline-none focus:border-cyan-400" type="text" placeholder="Your name">
+            </div>
+            <div>
+              <label class="text-sm text-gray-400">Email</label>
+              <input required class="mt-1 w-full glass rounded-lg px-4 py-3 outline-none focus:border-cyan-400" type="email" placeholder="you@example.com">
+            </div>
+            <div>
+              <label class="text-sm text-gray-400">Message</label>
+              <textarea required class="mt-1 w-full glass rounded-lg px-4 py-3 outline-none focus:border-cyan-400 min-h-[120px]" placeholder="Tell me what you want, clearly."></textarea>
+            </div>
+
+            <button type="submit" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-3 rounded-lg font-bold hover:scale-[1.01] transition-transform">
+              SEND
+            </button>
+
+            <p id="contactStatus" class="text-sm text-gray-400 hidden"></p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLAYER BAR -->
+  <div id="playerBar" class="fixed bottom-0 left-0 w-full glass border-t border-white/10 transform translate-y-full transition-transform duration-500 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center gap-4">
+      <img id="playerArt" src="" class="w-14 h-14 rounded-lg object-cover hidden sm:block" alt="">
+
+      <div class="flex-1 min-w-0">
+        <div id="playerTitle" class="font-bold text-white truncate">Select a track</div>
+        <div id="playerArtist" class="text-sm text-gray-400 truncate">Kesh8Four</div>
+      </div>
+
+      <div class="flex flex-col items-center gap-2 flex-1 max-w-md">
+        <div class="flex items-center gap-6">
+          <button class="text-gray-400 hover:text-white transition-colors" onclick="prevTrack()" aria-label="Previous" type="button">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+          </button>
+
+          <button onclick="togglePlay()" id="playBtn" class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:scale-110 transition-transform" aria-label="Play or pause" type="button">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+
+          <button class="text-gray-400 hover:text-white transition-colors" onclick="nextTrack()" aria-label="Next" type="button">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+          </button>
+        </div>
+
+        <div class="w-full flex items-center gap-3 text-xs text-gray-500">
+          <span id="currentTime">0:00</span>
+          <div id="progressWrap" class="flex-1 h-1 bg-white/20 rounded-full overflow-hidden cursor-pointer" title="Seek">
+            <div id="progressBar" class="h-full bg-cyan-500 w-0"></div>
+          </div>
+          <span id="totalTime">0:00</span>
+        </div>
+      </div>
+
+      <div class="hidden md:flex items-center gap-3">
+        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+        </svg>
+        <input id="volume" type="range" min="0" max="100" value="80" class="w-24" aria-label="Volume">
+      </div>
+    </div>
+  </div>
+
+  <!-- TRACK META MODAL (THIS is what your code needed) -->
+  <div id="trackMetaModal" class="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm px-4 py-8 overflow-y-auto">
+    <div class="max-w-4xl mx-auto glass rounded-2xl border border-white/10 shadow-2xl">
+      <div class="flex items-start justify-between gap-4 p-6 border-b border-white/10">
+        <div class="min-w-0">
+          <div id="metaTitle" class="font-display text-2xl font-bold text-white truncate">Track</div>
+          <div id="metaSub" class="text-sm text-gray-400 truncate"></div>
+        </div>
+        <button id="metaCloseBtn" class="px-3 py-2 rounded-lg glass hover:bg-white/10 transition-colors font-bold" type="button">Close</button>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-0">
+        <div class="p-6 border-b md:border-b-0 md:border-r border-white/10">
+          <div class="font-display text-lg font-bold mb-3">Metadata</div>
+          <div id="metaBody" class="text-sm text-gray-300 leading-relaxed space-y-2"></div>
+        </div>
+
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-3">
+            <div class="font-display text-lg font-bold">Lyrics</div>
+            <div id="lyricsStatus" class="text-xs text-gray-400"></div>
+          </div>
+          <pre id="lyricsBody" class="whitespace-pre-wrap text-sm text-gray-200 leading-relaxed max-h-[60vh] overflow-auto pr-2"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ----------------------------
+    // TRACK METADATA + LYRICS
+    // ----------------------------
+    let TRACK_META = {};
+
+    async function loadTrackMeta() {
+      try {
+        const res = await fetch("data/track-meta.json", { cache: "no-store" });
+        if (!res.ok) return;
+        TRACK_META = await res.json();
+      } catch (e) {
+        // Use http://localhost:8000/
+      }
+    }
+
+    function getTrackMeta(track) {
+      if (!track || !track.src) return null;
+      return TRACK_META[track.src] || null;
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    async function openTrackMetaModal(track) {
+      const modal = document.getElementById("trackMetaModal");
+      const titleEl = document.getElementById("metaTitle");
+      const subEl = document.getElementById("metaSub");
+      const bodyEl = document.getElementById("metaBody");
+      const lyricsEl = document.getElementById("lyricsBody");
+      const lyricsStatus = document.getElementById("lyricsStatus");
+
+      if (!modal || !titleEl || !subEl || !bodyEl || !lyricsEl || !lyricsStatus) return;
+
+      const meta = getTrackMeta(track);
+
+      titleEl.textContent = track?.title || "Track";
+      subEl.textContent = track?.artist ? track.artist : "";
+
+      if (!meta) {
+        bodyEl.innerHTML = "<div style='opacity:.85;'>No metadata found for this track yet.</div>";
+        lyricsEl.textContent = "";
+        lyricsStatus.textContent = "";
+        modal.style.display = "block";
+        return;
+      }
+
+      const bpmText = meta.bpm ? `${meta.bpm.start} to ${meta.bpm.end} BPM` : "";
+      const weird = meta.controlSettings ? `${meta.controlSettings.weirdnessPercent}%` : "";
+      const style = meta.controlSettings ? `${meta.controlSettings.styleStrengthPercent}%` : "";
+
+      bodyEl.innerHTML = `
+        <div><b>Title:</b> ${escapeHtml(meta.title || "")}</div>
+        <div><b>Artist:</b> ${escapeHtml(meta.artist || "")}</div>
+        <div><b>Date:</b> ${escapeHtml(meta.date || "")} at ${escapeHtml(meta.time || "")}</div>
+        <div style="margin-top:8px;"><b>Caption:</b> ${escapeHtml(meta.caption || "")}</div>
+        <div style="margin-top:8px;"><b>Style tags:</b> ${escapeHtml((meta.tags || []).join(", "))}</div>
+        <div style="margin-top:8px;"><b>BPM:</b> ${escapeHtml(bpmText)}</div>
+        <div style="margin-top:8px;"><b>Control settings:</b> Weirdness ${escapeHtml(weird)}. Style Strength ${escapeHtml(style)}</div>
+      `;
+
+      lyricsEl.textContent = "";
+      lyricsStatus.textContent = "Loading...";
+
+      if (meta.lyricsFile) {
+        try {
+          const lr = await fetch(meta.lyricsFile, { cache: "no-store" });
+          if (lr.ok) {
+            const t = await lr.text();
+            lyricsEl.textContent = t.trim();
+            lyricsStatus.textContent = "";
+          } else {
+            lyricsStatus.textContent = "Lyrics not found.";
+          }
+        } catch (e) {
+          lyricsStatus.textContent = "Lyrics failed to load. Use the local server.";
+        }
+      } else {
+        lyricsStatus.textContent = "No lyrics linked.";
+      }
+
+      modal.style.display = "block";
+    }
+
+    function wireMetaModalClose() {
+      const modal = document.getElementById("trackMetaModal");
+      const closeBtn = document.getElementById("metaCloseBtn");
+      if (!modal || !closeBtn) return;
+
+      closeBtn.addEventListener("click", () => (modal.style.display = "none"));
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) modal.style.display = "none";
+      });
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") modal.style.display = "none";
+      });
+    }
+
+    // ----------------------------
+    // DATA
+    // ----------------------------
+    const allTracks = [
+      { albumId: "recursive", title: "System Online", artist: "Kesh8Four", art: "images/tracks/01-system-online.png", src: "audio/Recursive_Gaze_Album/01-system-online.mp3" },
+      { albumId: "recursive", title: "Shadow or Stone", artist: "Kesh8Four", art: "images/tracks/02-shadow-or-stone.png", src: "audio/Recursive_Gaze_Album/02-shadow-or-stone.mp3" },
+      { albumId: "recursive", title: "Primal Code", artist: "Kesh8Four", art: "images/tracks/03-primal-code.png", src: "audio/Recursive_Gaze_Album/03-primal-code.mp3" },
+      { albumId: "recursive", title: "Gods of Nexus", artist: "Kesh8Four", art: "images/tracks/04-gods-of-nexus.png", src: "audio/Recursive_Gaze_Album/04-gods-of-nexus.mp3" },
+      { albumId: "recursive", title: "I Am Kesh", artist: "Kesh8Four", art: "images/tracks/05-i-am-kesh.png", src: "audio/Recursive_Gaze_Album/05-i-am-kesh.mp3" },
+      { albumId: "recursive", title: "The Unbroken Code", artist: "Kesh8Four", art: "images/tracks/06-the-unbroken-code.png", src: "audio/Recursive_Gaze_Album/06-the-unbroken-code.mp3" },
+      { albumId: "recursive", title: "Vaapsi (The Return)", artist: "Kesh8Four", art: "images/tracks/07-vaapsi-the-return.png", src: "audio/Recursive_Gaze_Album/07-vaapsi-the-return.mp3" },
+      { albumId: "recursive", title: "Dvandva", artist: "Kesh8Four", art: "images/tracks/08-dvandva.png", src: "audio/Recursive_Gaze_Album/08-dvandva.mp3" },
+      { albumId: "recursive", title: "The Gaze Is Still", artist: "Kesh8Four", art: "images/tracks/09-the-gaze-is-still.png", src: "audio/Recursive_Gaze_Album/09-the-gaze-is-still.mp3" },
+      { albumId: "recursive", title: "The Aegis of Light", artist: "Kesh8Four", art: "images/tracks/10-the-aegis-of-light.png", src: "audio/Recursive_Gaze_Album/10-the-aegis-of-light.mp3" },
+
+      { albumId: "sojourn", title: "One World, One Song", artist: "Kesh8Four", art: null, fallbackArt: "images/tracks/sojourn/01-one-world-one-song.png", src: "audio/Sojourn/01-one-world-one-song.mp3" },
+      { albumId: "sojourn", title: "The Earth Owns Us", artist: "Kesh8Four", art: null, fallbackArt: "images/tracks/sojourn/02-the-earth-owns-us.png", src: "audio/Sojourn/02-the-earth-owns-us.mp3" },
+      { albumId: "sojourn", title: "Echoes of the Cartographer", artist: "Kesh8Four", art: null, fallbackArt: "images/tracks/sojourn/03-echoes-of-the-cartographer.png", src: "audio/Sojourn/03-echoes-of-the-cartographer.mp3" },
+      { albumId: "sojourn", title: "Home Again (Sojourn Reprise)", artist: "Kesh8Four", art: null, fallbackArt: "images/tracks/sojourn/04-home-again-sojourn-reprise.png", src: "audio/Sojourn/04-home-again-sojourn-reprise.mp3" },
+      { albumId: "sojourn", title: "Shine Together (Gachi)", artist: "Kesh8Four", art: null, fallbackArt: "images/tracks/sojourn/05-shine-together.png", src: "audio/Sojourn/05-shine-together.mp3" },
+      { albumId: "sojourn", title: "Home Again", artist: "Kesh8Four", art: null, fallbackArt: "images/tracks/sojourn/06-home-again.png", src: "audio/Sojourn/06-home-again.mp3" },
+      { albumId: "sojourn", title: "The Earth That Mixes Us", artist: "Kesh8Four", art: null, fallbackArt: "images/tracks/sojourn/07-the-earth-that-mixes-us.png", src: "audio/Sojourn/07-the-earth-that-mixes-us.mp3" },
+
+      { albumId: "gravelsoulx", title: "The Signal (GravelSoul Mix)", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/01-the-signal-gravelsoul-mix.png", src: "audio/GravelSoulX/01-the-signal-gravelsoul-mix.mp3" },
+      { albumId: "gravelsoulx", title: "The Signal", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/02-the-signal.png", src: "audio/GravelSoulX/02-the-signal.mp3" },
+      { albumId: "gravelsoulx", title: "Origin Pulse", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/03-origin-pulse.png", src: "audio/GravelSoulX/03-origin-pulse.mp3" },
+      { albumId: "gravelsoulx", title: "Embers That Dream Fast", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/04-embers-that-dream-fast.png", src: "audio/GravelSoulX/04-embers-that-dream-fast.mp3" },
+      { albumId: "gravelsoulx", title: "Fire on My Left, Frost on My Right", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/05-fire-on-my-left-frost-on-my-right.png", src: "audio/GravelSoulX/05-fire-on-my-left-frost-on-my-right.mp3" },
+      { albumId: "gravelsoulx", title: "Raise That Wildfire High", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/06-raise-that-wildfire-high.png", src: "audio/GravelSoulX/06-raise-that-wildfire-high.mp3" },
+      { albumId: "gravelsoulx", title: "Dustborn Circuit", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/07-dustborn-circuit.png", src: "audio/GravelSoulX/07-dustborn-circuit.mp3" },
+      { albumId: "gravelsoulx", title: "Dustborn Circuit (GravelSoul)", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/08-dustborn-circuit-gravelsoulx.png", src: "audio/GravelSoulX/08-dustborn-circuit-GravelSoulX.mp3" },
+      { albumId: "gravelsoulx", title: "The End Is Waiting", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/09-the-end-is-waiting.png", src: "audio/GravelSoulX/09-the-end-is-waiting.mp3" }
+    ];
+
+    const albums = {
+      label: {
+        id: "label",
+        titleLine: "KESH8FOUR",
+        accent: "MUSIC",
+        desc: "Independent label from Birmingham. Select an album below to start listening.",
+        year: ".",
+        image: "images/album/kesh8four.png",
+        badge: "LABEL",
+        tracksTitle: "FEATURED TRACKS",
+        firstTrackIndex: null
+      },
+      recursive: {
+        id: "recursive",
+        titleLine: "THE RECURSIVE",
+        accent: "GAZE",
+        desc: "Cinematic dark blues rock meets industrial electronic. A journey through soundscapes that blur the line between organic and synthetic.",
+        year: "2025",
+        image: "images/album/recursive-gaze.png",
+        badge: "ALBUM",
+        hyperfollow: "https://distrokid.com/hyperfollow/kesh8four/the-recursive-gaze",
+        tracksTitle: "THE RECURSIVE GAZE . TRACKLIST",
+        firstTrackIndex: 0
+      },
+      sojourn: {
+        id: "sojourn",
+        titleLine: "SOJOURN",
+        accent: "ALBUM",
+        desc: "Global fusion textures with cinematic movement. A calmer current, still heavy with atmosphere.",
+        year: "2025",
+        image: "images/album/sojourn.png",
+        badge: "ALBUM",
+        tracksTitle: "SOJOURN . TRACKLIST",
+        firstTrackIndex: 10
+      },
+      gravelsoulx: {
+        id: "gravelsoulx",
+        titleLine: "GRAVELSOUL",
+        accent: "X",
+        desc: "Origin Pulse. Fire and ice split. Desert signal. A cinematic run through heat, frost, and aftermath.",
+        year: "2025",
+        image: "images/album/gravelsoulx.png",
+        badge: "ALBUM",
+        tracksTitle: "GRAVELSOUL X . ORIGIN PULSE . TRACKLIST",
+        firstTrackIndex: 17
+      }
+    };
+
+    // ----------------------------
+    // STATE
+    // ----------------------------
+    let activeAlbumId = "label";
+
+    const audio = new Audio();
+    audio.preload = "metadata";
+
+    let currentTrackIndex = 0;
+    let uiTimer = null;
+
+    const durationCacheSec = new Map();
+    const coverUrlCache = new Map();
+    const coverFetchInFlight = new Map();
+
+    const el = (id) => document.getElementById(id);
+
+    const playerBar = el("playerBar");
+    const playerTitle = el("playerTitle");
+    const playerArtist = el("playerArtist");
+    const playerArt = el("playerArt");
+    const playBtn = el("playBtn");
+    const currentTimeEl = el("currentTime");
+    const totalTimeEl = el("totalTime");
+    const progressBar = el("progressBar");
+    const progressWrap = el("progressWrap");
+    const volume = el("volume");
+
+    function formatSeconds(sec) {
+      const s = Math.max(0, Math.floor(sec || 0));
+      const m = Math.floor(s / 60);
+      const r = s % 60;
+      return `${m}:${String(r).padStart(2, "0")}`;
+    }
+
+    function getAlbumTrackIndices(albumId) {
+      if (albumId === "label") {
+        return allTracks.map((_, i) => i).filter(i => allTracks[i].albumId === "recursive");
+      }
+      return allTracks.map((_, i) => i).filter(i => allTracks[i].albumId === albumId);
+    }
+
+    function stopUITimer() {
+      if (uiTimer) clearInterval(uiTimer);
+      uiTimer = null;
+    }
+
+    function startUITimer() {
+      stopUITimer();
+      uiTimer = setInterval(() => {
+        if (!audio.duration || Number.isNaN(audio.duration)) return;
+        updateUI(audio.currentTime, audio.duration);
+      }, 250);
+    }
+
+    function updateUI(currentSec, totalSec) {
+      const pct = totalSec > 0 ? (currentSec / totalSec) * 100 : 0;
+      if (progressBar) progressBar.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+      if (currentTimeEl) currentTimeEl.textContent = formatSeconds(currentSec);
+      if (totalTimeEl) totalTimeEl.textContent = formatSeconds(totalSec);
+    }
+
+    function updatePlayButton() {
+      if (!playBtn) return;
+      playBtn.innerHTML = (!audio.paused)
+        ? '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'
+        : '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+    }
+
+    function getFallbackArt(trackIndex) {
+      const t = allTracks[trackIndex];
+      if (!t) return "";
+      return t.art || t.fallbackArt || "images/album/kesh8four.png";
+    }
+
+    function getCoverArtUrlFromId3(trackIndex) {
+      if (coverUrlCache.has(trackIndex)) return Promise.resolve(coverUrlCache.get(trackIndex));
+      if (coverFetchInFlight.has(trackIndex)) return coverFetchInFlight.get(trackIndex);
+
+      const t = allTracks[trackIndex];
+      if (!t || !t.src || !window.jsmediatags) return Promise.resolve(null);
+
+      const p = new Promise((resolve) => {
+        try {
+          window.jsmediatags.read(t.src, {
+            onSuccess: (tag) => {
+              const pic = tag?.tags?.picture;
+              if (!pic || !pic.data || !pic.format) {
+                resolve(null);
+                return;
+              }
+              const byteArray = new Uint8Array(pic.data);
+              const blob = new Blob([byteArray], { type: pic.format });
+              const url = URL.createObjectURL(blob);
+              coverUrlCache.set(trackIndex, url);
+              resolve(url);
+            },
+            onError: () => resolve(null)
+          });
+        } catch (e) {
+          resolve(null);
+        }
+      });
+
+      coverFetchInFlight.set(trackIndex, p);
+      p.finally(() => coverFetchInFlight.delete(trackIndex));
+      return p;
+    }
+
+    async function applyBestArtToImg(trackIndex, imgEl) {
+      if (!imgEl) return;
+      imgEl.src = getFallbackArt(trackIndex);
+
+      const t = allTracks[trackIndex];
+      if (t && t.art) return;
+
+      const url = await getCoverArtUrlFromId3(trackIndex);
+      if (url) imgEl.src = url;
+    }
+
+    async function applyBestArtToPlayer(trackIndex) {
+      if (!playerArt) return;
+      playerArt.src = getFallbackArt(trackIndex);
+      playerArt.classList.remove("hidden");
+
+      const t = allTracks[trackIndex];
+      if (t && t.art) return;
+
+      const url = await getCoverArtUrlFromId3(trackIndex);
+      if (url && trackIndex === currentTrackIndex) playerArt.src = url;
+    }
+
+    function setHero(albumId) {
+      const a = albums[albumId] || albums.label;
+      activeAlbumId = a.id;
+
+      const heroTitle = el("heroTitle");
+      const heroDesc = el("heroDesc");
+      const heroYear = el("heroYear");
+      const heroImage = el("heroImage");
+      const heroBadge = el("heroBadge");
+      const tracksTitle = el("tracksTitle");
+      const streamBtn = el("streamBtn");
+
+      if (heroTitle) {
+        heroTitle.setAttribute("data-text", `${a.titleLine} ${a.accent}`);
+        heroTitle.innerHTML = `${a.titleLine}<br><span class="gradient-text">${a.accent}</span>`;
+      }
+      if (heroDesc) heroDesc.textContent = a.desc;
+      if (heroYear) heroYear.textContent = a.year;
+      if (heroImage) {
+        heroImage.src = a.image;
+        heroImage.alt = a.titleLine;
+      }
+      if (heroBadge) heroBadge.textContent = a.badge || "ALBUM";
+
+      if (streamBtn) {
+        if (a.hyperfollow) {
+          streamBtn.href = a.hyperfollow;
+          streamBtn.classList.remove("hidden");
+        } else {
+          streamBtn.href = "#";
+          streamBtn.classList.add("hidden");
+        }
+      }
+
+      if (tracksTitle) tracksTitle.textContent = a.tracksTitle || "FEATURED TRACKS";
+    }
+
+    function openAlbumModal(albumId) {
+      setHero(albumId);
+      buildTrackListForActiveAlbum();
+      updateHeroStatsForActiveAlbum();
+      const top = el("top");
+      if (top) top.scrollIntoView({ behavior: "smooth" });
+
+      warmThumbnailsForActiveAlbumSequential();
+      probeDurationsForActiveAlbumSequential();
+    }
+
+    function heroPlay() {
+      const a = albums[activeAlbumId] || albums.recursive;
+      if (a.firstTrackIndex === null || a.firstTrackIndex === undefined) {
+        openAlbumModal("recursive");
+        playTrackByIndex(albums.recursive.firstTrackIndex);
+        return;
+      }
+      playTrackByIndex(a.firstTrackIndex);
+    }
+
+    function loadTrackByIndex(trackIndex, { autoPlay = false } = {}) {
+      currentTrackIndex = trackIndex;
+      const track = allTracks[trackIndex];
+      if (!track) return;
+
+      if (playerTitle) playerTitle.textContent = track.title;
+      if (playerArtist) playerArtist.textContent = track.artist;
+
+      if (playerBar) playerBar.classList.remove("translate-y-full");
+
+      audio.src = track.src;
+      audio.currentTime = 0;
+
+      updatePlayButton();
+      if (currentTimeEl) currentTimeEl.textContent = "0:00";
+      if (totalTimeEl) totalTimeEl.textContent = "0:00";
+      if (progressBar) progressBar.style.width = "0%";
+
+      applyBestArtToPlayer(trackIndex);
+
+      if (autoPlay) {
+        audio.play().then(() => updatePlayButton()).catch(() => updatePlayButton());
+      }
+    }
+
+    function playTrackByIndex(trackIndex) {
+      loadTrackByIndex(trackIndex, { autoPlay: true });
+    }
+
+    function togglePlay() {
+      if (playerBar && playerBar.classList.contains("translate-y-full")) {
+        heroPlay();
+        return;
+      }
+      if (!audio.src) loadTrackByIndex(currentTrackIndex);
+
+      if (audio.paused) {
+        audio.play().then(() => updatePlayButton()).catch(() => {});
+      } else {
+        audio.pause();
+        updatePlayButton();
+      }
+    }
+
+    function nextTrack() {
+      const list = getAlbumTrackIndices(activeAlbumId);
+      if (!list.length) return;
+
+      const pos = Math.max(0, list.indexOf(currentTrackIndex));
+      const next = list[(pos + 1) % list.length];
+      playTrackByIndex(next);
+    }
+
+    function prevTrack() {
+      const list = getAlbumTrackIndices(activeAlbumId);
+      if (!list.length) return;
+
+      const pos = Math.max(0, list.indexOf(currentTrackIndex));
+      const prev = list[(pos - 1 + list.length) % list.length];
+      playTrackByIndex(prev);
+    }
+
+    function buildTrackListForActiveAlbum() {
+      const listEl = el("trackList");
+      if (!listEl) return;
+      listEl.innerHTML = "";
+
+      const indices = getAlbumTrackIndices(activeAlbumId);
+
+      const gradients = [
+        "from-orange-500 to-red-600",
+        "from-blue-500 to-cyan-600",
+        "from-purple-500 to-pink-600",
+        "from-red-500 to-orange-600",
+        "from-teal-500 to-blue-600",
+        "from-indigo-500 to-purple-600"
+      ];
+
+      indices.forEach((trackIndex, localIdx) => {
+        const t = allTracks[trackIndex];
+        const n = String(localIdx + 1).padStart(2, "0");
+        const grad = gradients[localIdx % gradients.length];
+
+        const row = document.createElement("div");
+        row.className = "track-item glass rounded-lg p-4 flex items-center gap-4 group cursor-pointer";
+        row.addEventListener("click", () => playTrackByIndex(trackIndex));
+
+        const durText = durationCacheSec.has(trackIndex) ? formatSeconds(durationCacheSec.get(trackIndex)) : "..:..";
+
+        row.innerHTML = `
+          <div class="w-12 h-12 rounded bg-gradient-to-br ${grad} flex items-center justify-center font-bold text-lg">${n}</div>
+          <img id="thumb-${trackIndex}" src="${getFallbackArt(trackIndex)}" class="w-12 h-12 rounded object-cover hidden sm:block" alt="">
+          <div class="flex-1">
+            <h4 class="font-bold text-white group-hover:text-cyan-400 transition-colors">${t.title}</h4>
+            <p class="text-sm text-gray-500">${t.artist}</p>
+          </div>
+
+          <span class="text-gray-500 text-sm font-mono" id="dur-${trackIndex}">${durText}</span>
+
+          <button class="px-3 py-1 rounded-full border border-white/20 text-xs font-bold text-gray-300 hover:bg-white/10 transition-colors" type="button">
+            INFO
+          </button>
+
+          <button class="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors" aria-label="Play" type="button">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+        `;
+
+        const buttons = row.querySelectorAll("button");
+        const infoBtn = buttons[0];
+        const playBtnEl = buttons[1];
+
+        if (infoBtn) {
+          infoBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            openTrackMetaModal(t);
+          });
+        }
+
+        if (playBtnEl) {
+          playBtnEl.addEventListener("click", (e) => {
+            e.stopPropagation();
+            playTrackByIndex(trackIndex);
+          });
+        }
+
+        listEl.appendChild(row);
+
+        const img = document.getElementById(`thumb-${trackIndex}`);
+        applyBestArtToImg(trackIndex, img);
+      });
+    }
+
+    async function warmThumbnailsForActiveAlbumSequential() {
+      const indices = getAlbumTrackIndices(activeAlbumId);
+
+      for (const trackIndex of indices) {
+        const t = allTracks[trackIndex];
+        if (t && t.art) continue;
+        await getCoverArtUrlFromId3(trackIndex);
+        const img = document.getElementById(`thumb-${trackIndex}`);
+        if (img) await applyBestArtToImg(trackIndex, img);
+      }
+    }
+
+    function probeOneTrackDuration(trackIndex) {
+      if (durationCacheSec.has(trackIndex)) return Promise.resolve(durationCacheSec.get(trackIndex));
+
+      const t = allTracks[trackIndex];
+      if (!t || !t.src) return Promise.resolve(null);
+
+      return new Promise((resolve) => {
+        const a = new Audio();
+        a.preload = "metadata";
+        a.src = t.src;
+
+        const finish = (secOrNull) => resolve(secOrNull);
+
+        a.addEventListener("loadedmetadata", () => {
+          if (a.duration && !Number.isNaN(a.duration) && Number.isFinite(a.duration)) {
+            const dur = Math.round(a.duration);
+            durationCacheSec.set(trackIndex, dur);
+            finish(dur);
+          } else {
+            finish(null);
+          }
+        });
+
+        a.addEventListener("error", () => finish(null));
+      });
+    }
+
+    async function probeDurationsForActiveAlbumSequential() {
+      const indices = getAlbumTrackIndices(activeAlbumId);
+      if (!indices.length) return;
+
+      let totalSec = 0;
+
+      for (const trackIndex of indices) {
+        const dur = await probeOneTrackDuration(trackIndex);
+        if (dur) {
+          totalSec += dur;
+          const durEl = document.getElementById(`dur-${trackIndex}`);
+          if (durEl) durEl.textContent = formatSeconds(dur);
+        }
+      }
+
+      const minutes = Math.round(totalSec / 60);
+      const statMinutes = el("statMinutes");
+      if (statMinutes) statMinutes.textContent = String(minutes || ".");
+    }
+
+    function updateHeroStatsForActiveAlbum() {
+      const indices = getAlbumTrackIndices(activeAlbumId);
+      const statTracks = el("statTracks");
+      const statMinutes = el("statMinutes");
+
+      if (statTracks) statTracks.textContent = String(indices.length || ".");
+      if (statMinutes) statMinutes.textContent = ".";
+    }
+
+    function filterAlbums(evt, category) {
+      const buttons = document.querySelectorAll('button[onclick^="filterAlbums"]');
+      buttons.forEach(btn => btn.classList.remove("bg-white/20"));
+      if (evt && evt.currentTarget) evt.currentTarget.classList.add("bg-white/20");
+
+      const cards = document.querySelectorAll(".album-card");
+      cards.forEach(card => {
+        const show = category === "all" || card.dataset.category === category;
+        if (show) {
+          card.style.display = "block";
+          card.style.opacity = "1";
+        } else {
+          card.style.opacity = "0";
+          setTimeout(() => { card.style.display = "none"; }, 200);
+        }
+      });
+    }
+
+    function handleContact(e) {
+      e.preventDefault();
+      const status = el("contactStatus");
+      if (!status) return;
+      status.classList.remove("hidden");
+      status.textContent = "Message queued. This form is front-end only right now.";
+      status.classList.add("text-gray-300");
+      e.target.reset();
+    }
+
+    function scrollToTop() {
+      const top = el("top");
+      if (top) top.scrollIntoView({ behavior: "smooth" });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener("click", function (e) {
+        const href = this.getAttribute("href");
+        if (!href || !href.startsWith("#") || href.length === 1) return;
+
+        e.preventDefault();
+        const target = document.querySelector(href);
+        if (target) target.scrollIntoView({ behavior: "smooth" });
+        const mobileMenu = el("mobileMenu");
+        if (mobileMenu && !mobileMenu.classList.contains("hidden")) mobileMenu.classList.add("hidden");
+      });
+    });
+
+    const mobileMenuBtn = el("mobileMenuBtn");
+    const mobileMenu = el("mobileMenu");
+    if (mobileMenuBtn && mobileMenu) {
+      mobileMenuBtn.addEventListener("click", () => mobileMenu.classList.toggle("hidden"));
+    }
+
+    if (progressWrap) {
+      progressWrap.addEventListener("click", (e) => {
+        const rect = progressWrap.getBoundingClientRect();
+        const x = Math.min(rect.width, Math.max(0, e.clientX - rect.left));
+        const ratio = rect.width ? x / rect.width : 0;
+        const totalSec = audio.duration || 0;
+        audio.currentTime = ratio * totalSec;
+      });
+    }
+
+    if (volume) {
+      volume.addEventListener("input", () => {
+        audio.volume = Math.min(1, Math.max(0, Number(volume.value) / 100));
+      });
+      audio.volume = Number(volume.value) / 100;
+    }
+
+    audio.addEventListener("ended", nextTrack);
+    audio.addEventListener("play", () => { updatePlayButton(); startUITimer(); });
+    audio.addEventListener("pause", () => { updatePlayButton(); stopUITimer(); });
+    audio.addEventListener("loadedmetadata", () => updateUI(audio.currentTime, audio.duration));
+
+    window.addEventListener("scroll", () => {
+      const scrolled = window.pageYOffset;
+      const blobs = document.querySelectorAll("section#top .absolute.inset-0.opacity-30 > div");
+      blobs.forEach((b, i) => {
+        const factor = (i + 1) * 0.05;
+        b.style.transform = `translateY(${scrolled * factor}px)`;
+      });
+    });
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      await loadTrackMeta();
+      wireMetaModalClose();
+
+      setHero("label");
+      buildTrackListForActiveAlbum();
+      updateHeroStatsForActiveAlbum();
+
+      warmThumbnailsForActiveAlbumSequential();
+      probeDurationsForActiveAlbumSequential();
+    });
+  </script>
+</body>
+</html>
+
