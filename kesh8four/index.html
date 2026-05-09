@@ -9,7 +9,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-  <!-- Reads embedded MP3 cover art (ID3 tags) -->
+  <!-- Reads embedded MP3 cover art (ID3 tags).
+       Note: This only works when MP3s are actually downloadable from the same origin. -->
   <script src="https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js"></script>
 
   <style>
@@ -221,7 +222,7 @@
               PLAY NOW
             </button>
 
-            <a id="streamBtn" href="#" target="_blank" rel="noopener" class="glass px-8 py-4 rounded-full font-bold hover:bg-white/10 transition-colors flex items-center gap-3 hidden">
+            <a id="streamBtn" href="#" target="_blank" rel="noopener" class="glass px-8 py-4 rounded-full font-bold hover:bg-white/10 transition-colors flex items-center gap-3">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
               </svg>
@@ -370,8 +371,7 @@
           soundscapes and electronic production.
         </p>
         <p class="text-gray-400 leading-relaxed">
-          Built as a clean local player first. Streaming links can be added when you decide
-          where the official catalogue lives.
+          Built as a clean player first, with streaming as the public source of truth.
         </p>
       </div>
     </div>
@@ -470,7 +470,7 @@
     </div>
   </div>
 
-  <!-- TRACK META MODAL (THIS is what your code needed) -->
+  <!-- TRACK META MODAL -->
   <div id="trackMetaModal" class="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm px-4 py-8 overflow-y-auto">
     <div class="max-w-4xl mx-auto glass rounded-2xl border border-white/10 shadow-2xl">
       <div class="flex items-start justify-between gap-4 p-6 border-b border-white/10">
@@ -499,9 +499,18 @@
   </div>
 
   <script>
-    // ----------------------------
+    // -----------------------------------
+    // CONFIG
+    // -----------------------------------
+    const DEFAULT_HYPERFOLLOW = "https://distrokid.com/hyperfollow/kesh8four/the-recursive-gaze";
+
+    // If MP3 files do not exist on the live site, we switch the whole UX to streaming mode.
+    // This prevents broken play buttons.
+    let AUDIO_AVAILABLE = true;
+
+    // -----------------------------------
     // TRACK METADATA + LYRICS
-    // ----------------------------
+    // -----------------------------------
     let TRACK_META = {};
 
     async function loadTrackMeta() {
@@ -510,7 +519,7 @@
         if (!res.ok) return;
         TRACK_META = await res.json();
       } catch (e) {
-        // Use http://localhost:8000/
+        // local only
       }
     }
 
@@ -579,7 +588,7 @@
             lyricsStatus.textContent = "Lyrics not found.";
           }
         } catch (e) {
-          lyricsStatus.textContent = "Lyrics failed to load. Use the local server.";
+          lyricsStatus.textContent = "Lyrics failed to load.";
         }
       } else {
         lyricsStatus.textContent = "No lyrics linked.";
@@ -602,9 +611,9 @@
       });
     }
 
-    // ----------------------------
+    // -----------------------------------
     // DATA
-    // ----------------------------
+    // -----------------------------------
     const allTracks = [
       { albumId: "recursive", title: "System Online", artist: "Kesh8Four", art: "images/tracks/01-system-online.png", src: "audio/Recursive_Gaze_Album/01-system-online.mp3" },
       { albumId: "recursive", title: "Shadow or Stone", artist: "Kesh8Four", art: "images/tracks/02-shadow-or-stone.png", src: "audio/Recursive_Gaze_Album/02-shadow-or-stone.mp3" },
@@ -646,7 +655,8 @@
         image: "images/album/kesh8four.png",
         badge: "LABEL",
         tracksTitle: "FEATURED TRACKS",
-        firstTrackIndex: null
+        firstTrackIndex: null,
+        hyperfollow: DEFAULT_HYPERFOLLOW
       },
       recursive: {
         id: "recursive",
@@ -656,7 +666,7 @@
         year: "2025",
         image: "images/album/recursive-gaze.png",
         badge: "ALBUM",
-        hyperfollow: "https://distrokid.com/hyperfollow/kesh8four/the-recursive-gaze",
+        hyperfollow: DEFAULT_HYPERFOLLOW,
         tracksTitle: "THE RECURSIVE GAZE . TRACKLIST",
         firstTrackIndex: 0
       },
@@ -669,7 +679,8 @@
         image: "images/album/sojourn.png",
         badge: "ALBUM",
         tracksTitle: "SOJOURN . TRACKLIST",
-        firstTrackIndex: 10
+        firstTrackIndex: 10,
+        hyperfollow: DEFAULT_HYPERFOLLOW
       },
       gravelsoulx: {
         id: "gravelsoulx",
@@ -680,13 +691,14 @@
         image: "images/album/gravelsoulx.png",
         badge: "ALBUM",
         tracksTitle: "GRAVELSOUL X . ORIGIN PULSE . TRACKLIST",
-        firstTrackIndex: 17
+        firstTrackIndex: 17,
+        hyperfollow: DEFAULT_HYPERFOLLOW
       }
     };
 
-    // ----------------------------
+    // -----------------------------------
     // STATE
-    // ----------------------------
+    // -----------------------------------
     let activeAlbumId = "label";
 
     const audio = new Audio();
@@ -759,7 +771,63 @@
       return t.art || t.fallbackArt || "images/album/kesh8four.png";
     }
 
+    function openStreaming(albumId = activeAlbumId) {
+      const a = albums[albumId] || albums.recursive;
+      const link = a.hyperfollow || DEFAULT_HYPERFOLLOW;
+      window.open(link, "_blank", "noopener");
+    }
+
+    async function checkAudioAvailability() {
+      // We test a single MP3 path from the first recursive track.
+      // If it does not exist, we switch to streaming mode and prevent broken play.
+      const probe = allTracks.find(t => t.albumId === "recursive")?.src;
+      if (!probe) return false;
+
+      try {
+        // HEAD is sometimes blocked on static hosts, so we fall back to GET with a Range header.
+        const head = await fetch(probe, { method: "HEAD", cache: "no-store" });
+        if (head.ok) return true;
+
+        const range = await fetch(probe, {
+          method: "GET",
+          headers: { "Range": "bytes=0-1" },
+          cache: "no-store"
+        });
+        return range.ok;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function applyStreamingModeUI() {
+      const heroDesc = el("heroDesc");
+      const heroPlayBtn = el("heroPlayBtn");
+
+      if (heroDesc) {
+        heroDesc.textContent = "Streaming is live. This site is a visual hub, with playback handled by official platforms.";
+      }
+
+      if (heroPlayBtn) {
+        heroPlayBtn.innerHTML = `
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+          LISTEN NOW
+        `;
+        heroPlayBtn.classList.remove("play-pulse");
+      }
+
+      // Keep player bar hidden if audio is not available.
+      if (playerBar) playerBar.classList.add("translate-y-full");
+      stopUITimer();
+      audio.pause();
+      audio.src = "";
+    }
+
     function getCoverArtUrlFromId3(trackIndex) {
+      // Only attempt ID3 reads when audio exists, otherwise it is pointless and can error.
+      if (!AUDIO_AVAILABLE) return Promise.resolve(null);
+
       if (coverUrlCache.has(trackIndex)) return Promise.resolve(coverUrlCache.get(trackIndex));
       if (coverFetchInFlight.has(trackIndex)) return coverFetchInFlight.get(trackIndex);
 
@@ -832,7 +900,7 @@
         heroTitle.setAttribute("data-text", `${a.titleLine} ${a.accent}`);
         heroTitle.innerHTML = `${a.titleLine}<br><span class="gradient-text">${a.accent}</span>`;
       }
-      if (heroDesc) heroDesc.textContent = a.desc;
+      if (heroDesc && AUDIO_AVAILABLE) heroDesc.textContent = a.desc;
       if (heroYear) heroYear.textContent = a.year;
       if (heroImage) {
         heroImage.src = a.image;
@@ -840,14 +908,11 @@
       }
       if (heroBadge) heroBadge.textContent = a.badge || "ALBUM";
 
+      // Always show streaming button, always set a working link.
       if (streamBtn) {
-        if (a.hyperfollow) {
-          streamBtn.href = a.hyperfollow;
-          streamBtn.classList.remove("hidden");
-        } else {
-          streamBtn.href = "#";
-          streamBtn.classList.add("hidden");
-        }
+        const link = a.hyperfollow || DEFAULT_HYPERFOLLOW;
+        streamBtn.href = link;
+        streamBtn.classList.remove("hidden");
       }
 
       if (tracksTitle) tracksTitle.textContent = a.tracksTitle || "FEATURED TRACKS";
@@ -861,10 +926,18 @@
       if (top) top.scrollIntoView({ behavior: "smooth" });
 
       warmThumbnailsForActiveAlbumSequential();
-      probeDurationsForActiveAlbumSequential();
+
+      // Only probe durations if audio exists, otherwise it wastes time and fails.
+      if (AUDIO_AVAILABLE) probeDurationsForActiveAlbumSequential();
     }
 
     function heroPlay() {
+      // If audio is not available, playing should never break. It should open HyperFollow.
+      if (!AUDIO_AVAILABLE) {
+        openStreaming(activeAlbumId);
+        return;
+      }
+
       const a = albums[activeAlbumId] || albums.recursive;
       if (a.firstTrackIndex === null || a.firstTrackIndex === undefined) {
         openAlbumModal("recursive");
@@ -875,6 +948,11 @@
     }
 
     function loadTrackByIndex(trackIndex, { autoPlay = false } = {}) {
+      if (!AUDIO_AVAILABLE) {
+        openStreaming(activeAlbumId);
+        return;
+      }
+
       currentTrackIndex = trackIndex;
       const track = allTracks[trackIndex];
       if (!track) return;
@@ -904,6 +982,11 @@
     }
 
     function togglePlay() {
+      if (!AUDIO_AVAILABLE) {
+        openStreaming(activeAlbumId);
+        return;
+      }
+
       if (playerBar && playerBar.classList.contains("translate-y-full")) {
         heroPlay();
         return;
@@ -919,6 +1002,11 @@
     }
 
     function nextTrack() {
+      if (!AUDIO_AVAILABLE) {
+        openStreaming(activeAlbumId);
+        return;
+      }
+
       const list = getAlbumTrackIndices(activeAlbumId);
       if (!list.length) return;
 
@@ -928,6 +1016,11 @@
     }
 
     function prevTrack() {
+      if (!AUDIO_AVAILABLE) {
+        openStreaming(activeAlbumId);
+        return;
+      }
+
       const list = getAlbumTrackIndices(activeAlbumId);
       if (!list.length) return;
 
@@ -959,9 +1052,17 @@
 
         const row = document.createElement("div");
         row.className = "track-item glass rounded-lg p-4 flex items-center gap-4 group cursor-pointer";
-        row.addEventListener("click", () => playTrackByIndex(trackIndex));
 
-        const durText = durationCacheSec.has(trackIndex) ? formatSeconds(durationCacheSec.get(trackIndex)) : "..:..";
+        // Clicking the row:
+        // If audio exists, play. If not, open HyperFollow.
+        row.addEventListener("click", () => {
+          if (AUDIO_AVAILABLE) playTrackByIndex(trackIndex);
+          else openStreaming(activeAlbumId);
+        });
+
+        const durText = (AUDIO_AVAILABLE && durationCacheSec.has(trackIndex))
+          ? formatSeconds(durationCacheSec.get(trackIndex))
+          : "..:..";
 
         row.innerHTML = `
           <div class="w-12 h-12 rounded bg-gradient-to-br ${grad} flex items-center justify-center font-bold text-lg">${n}</div>
@@ -996,7 +1097,8 @@
         if (playBtnEl) {
           playBtnEl.addEventListener("click", (e) => {
             e.stopPropagation();
-            playTrackByIndex(trackIndex);
+            if (AUDIO_AVAILABLE) playTrackByIndex(trackIndex);
+            else openStreaming(activeAlbumId);
           });
         }
 
@@ -1020,6 +1122,7 @@
     }
 
     function probeOneTrackDuration(trackIndex) {
+      if (!AUDIO_AVAILABLE) return Promise.resolve(null);
       if (durationCacheSec.has(trackIndex)) return Promise.resolve(durationCacheSec.get(trackIndex));
 
       const t = allTracks[trackIndex];
@@ -1047,6 +1150,8 @@
     }
 
     async function probeDurationsForActiveAlbumSequential() {
+      if (!AUDIO_AVAILABLE) return;
+
       const indices = getAlbumTrackIndices(activeAlbumId);
       if (!indices.length) return;
 
@@ -1129,6 +1234,10 @@
 
     if (progressWrap) {
       progressWrap.addEventListener("click", (e) => {
+        if (!AUDIO_AVAILABLE) {
+          openStreaming(activeAlbumId);
+          return;
+        }
         const rect = progressWrap.getBoundingClientRect();
         const x = Math.min(rect.width, Math.max(0, e.clientX - rect.left));
         const ratio = rect.width ? x / rect.width : 0;
@@ -1162,14 +1271,21 @@
       await loadTrackMeta();
       wireMetaModalClose();
 
+      // Detect if MP3s exist on the deployed site.
+      AUDIO_AVAILABLE = await checkAudioAvailability();
+
       setHero("label");
       buildTrackListForActiveAlbum();
       updateHeroStatsForActiveAlbum();
 
       warmThumbnailsForActiveAlbumSequential();
-      probeDurationsForActiveAlbumSequential();
+
+      if (AUDIO_AVAILABLE) {
+        probeDurationsForActiveAlbumSequential();
+      } else {
+        applyStreamingModeUI();
+      }
     });
   </script>
 </body>
 </html>
-

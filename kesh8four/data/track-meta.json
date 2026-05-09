@@ -1,0 +1,34 @@
+{
+  "audio/Sojourn/02-the-earth-owns-us.mp3": {
+    "title": "The Earth Owns Us",
+    "date": "2 November 2025",
+    "time": "12:35",
+    "artist": "Kesh8Four",
+    "caption": "Add a Caption",
+    "tags": [
+      "cinematic rock",
+      "epic rock anthem",
+      "arena rock",
+      "powerful electric guitars",
+      "deep bass groove",
+      "thunderous tribal drums",
+      "tom-driven builds",
+      "stadium gang chants",
+      "male lead with choir",
+      "big snare",
+      "wide guitars",
+      "energetic",
+      "dramatic",
+      "unity and defiance theme"
+    ],
+    "bpm": {
+      "start": 110,
+      "end": 125
+    },
+    "controlSettings": {
+      "weirdnessPercent": 44,
+      "styleStrengthPercent": 88
+    },
+    "lyricsFile": "lyrics/sojourn/02-the-earth-owns-us.txt"
+  }
+}
