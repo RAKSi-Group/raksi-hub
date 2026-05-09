@@ -504,14 +504,9 @@
     // -----------------------------------
     const DEFAULT_HYPERFOLLOW = "https://distrokid.com/hyperfollow/kesh8four/the-recursive-gaze";
 
-    // Per-album audio availability. Populated during init by probing one track per album.
-    // Falls back gracefully to streaming per-album rather than global on/off.
-    const ALBUM_AUDIO_AVAILABLE = {};
-
-    // Legacy alias used throughout — checks the active album.
-    function isAudioAvailable(albumId) {
-      return ALBUM_AUDIO_AVAILABLE[albumId || activeAlbumId] === true;
-    }
+    // If MP3 files do not exist on the live site, we switch the whole UX to streaming mode.
+    // This prevents broken play buttons.
+    let AUDIO_AVAILABLE = true;
 
     // -----------------------------------
     // TRACK METADATA + LYRICS
@@ -646,7 +641,7 @@
       { albumId: "gravelsoulx", title: "Fire on My Left, Frost on My Right", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/05-fire-on-my-left-frost-on-my-right.png", src: "audio/GravelSoulX/05-fire-on-my-left-frost-on-my-right.mp3" },
       { albumId: "gravelsoulx", title: "Raise That Wildfire High", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/06-raise-that-wildfire-high.png", src: "audio/GravelSoulX/06-raise-that-wildfire-high.mp3" },
       { albumId: "gravelsoulx", title: "Dustborn Circuit", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/07-dustborn-circuit.png", src: "audio/GravelSoulX/07-dustborn-circuit.mp3" },
-      { albumId: "gravelsoulx", title: "Dustborn Circuit (GravelSoul)", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/08-dustborn-circuit-gravelsoulx.png", src: "audio/GravelSoulX/08-dustborn-circuit-GravelSoulx.mp3" },
+      { albumId: "gravelsoulx", title: "Dustborn Circuit (GravelSoul)", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/08-dustborn-circuit-gravelsoulx.png", src: "audio/GravelSoulX/08-dustborn-circuit-GravelSoulX.mp3" },
       { albumId: "gravelsoulx", title: "The End Is Waiting", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/09-the-end-is-waiting.png", src: "audio/GravelSoulX/09-the-end-is-waiting.mp3" }
     ];
 
@@ -777,62 +772,34 @@
     }
 
     function openStreaming(albumId = activeAlbumId) {
-      const a = albums[albumId] || albums.label;
-      // Only use DEFAULT_HYPERFOLLOW if the album has no dedicated link.
-      // Sojourn and GravelSoulX don't have their own HyperFollow yet —
-      // in that case fall back to Recursive Gaze as the label's main streaming page.
+      const a = albums[albumId] || albums.recursive;
       const link = a.hyperfollow || DEFAULT_HYPERFOLLOW;
       window.open(link, "_blank", "noopener");
     }
 
-    function probeAudioSrc(src) {
-      // Uses an Audio element instead of fetch() so it works on both
-      // file:// (local dev) and https:// (deployed). fetch() is blocked
-      // on file:// by browsers for security, causing false negatives.
-      if (!src) return Promise.resolve(false);
-
-      return new Promise((resolve) => {
-        const a = new Audio();
-        a.preload = "metadata";
-
-        const done = (result) => {
-          a.onerror = null;
-          a.oncanplaythrough = null;
-          a.onloadedmetadata = null;
-          a.src = "";
-          resolve(result);
-        };
-
-        // loadedmetadata fires as soon as the browser has confirmed the file exists
-        // and can read basic info — reliable on both file:// and http(s)://
-        a.onloadedmetadata = () => done(true);
-
-        // error fires if the file is missing or unreadable
-        a.onerror = () => done(false);
-
-        // Safety timeout — if neither fires within 5s, assume unavailable
-        const timeout = setTimeout(() => done(false), 5000);
-        a.onloadedmetadata = () => { clearTimeout(timeout); done(true); };
-        a.onerror = () => { clearTimeout(timeout); done(false); };
-
-        a.src = src;
-        a.load();
-      });
-    }
-
     async function checkAudioAvailability() {
-      // Probe one track per album independently so each album knows its own state.
-      const albumIds = ["recursive", "sojourn", "gravelsoulx"];
-      await Promise.all(albumIds.map(async (albumId) => {
-        const probe = allTracks.find(t => t.albumId === albumId)?.src;
-        ALBUM_AUDIO_AVAILABLE[albumId] = await probeAudioSrc(probe);
-      }));
-      // "label" view uses recursive tracks
-      ALBUM_AUDIO_AVAILABLE["label"] = ALBUM_AUDIO_AVAILABLE["recursive"];
+      // We test a single MP3 path from the first recursive track.
+      // If it does not exist, we switch to streaming mode and prevent broken play.
+      const probe = allTracks.find(t => t.albumId === "recursive")?.src;
+      if (!probe) return false;
+
+      try {
+        // HEAD is sometimes blocked on static hosts, so we fall back to GET with a Range header.
+        const head = await fetch(probe, { method: "HEAD", cache: "no-store" });
+        if (head.ok) return true;
+
+        const range = await fetch(probe, {
+          method: "GET",
+          headers: { "Range": "bytes=0-1" },
+          cache: "no-store"
+        });
+        return range.ok;
+      } catch (e) {
+        return false;
+      }
     }
 
     function applyStreamingModeUI() {
-      // Only called when zero albums have local audio (e.g. live deployed site with no MP3s).
       const heroDesc = el("heroDesc");
       const heroPlayBtn = el("heroPlayBtn");
 
@@ -850,6 +817,7 @@
         heroPlayBtn.classList.remove("play-pulse");
       }
 
+      // Keep player bar hidden if audio is not available.
       if (playerBar) playerBar.classList.add("translate-y-full");
       stopUITimer();
       audio.pause();
@@ -858,7 +826,7 @@
 
     function getCoverArtUrlFromId3(trackIndex) {
       // Only attempt ID3 reads when audio exists, otherwise it is pointless and can error.
-      if (!isAudioAvailable(activeAlbumId)) return Promise.resolve(null);
+      if (!AUDIO_AVAILABLE) return Promise.resolve(null);
 
       if (coverUrlCache.has(trackIndex)) return Promise.resolve(coverUrlCache.get(trackIndex));
       if (coverFetchInFlight.has(trackIndex)) return coverFetchInFlight.get(trackIndex);
@@ -932,7 +900,7 @@
         heroTitle.setAttribute("data-text", `${a.titleLine} ${a.accent}`);
         heroTitle.innerHTML = `${a.titleLine}<br><span class="gradient-text">${a.accent}</span>`;
       }
-      if (heroDesc && isAudioAvailable(a.id)) heroDesc.textContent = a.desc;
+      if (heroDesc && AUDIO_AVAILABLE) heroDesc.textContent = a.desc;
       if (heroYear) heroYear.textContent = a.year;
       if (heroImage) {
         heroImage.src = a.image;
@@ -960,31 +928,27 @@
       warmThumbnailsForActiveAlbumSequential();
 
       // Only probe durations if audio exists, otherwise it wastes time and fails.
-      if (isAudioAvailable(activeAlbumId)) probeDurationsForActiveAlbumSequential();
+      if (AUDIO_AVAILABLE) probeDurationsForActiveAlbumSequential();
     }
 
     function heroPlay() {
-      const a = albums[activeAlbumId] || albums.recursive;
-
-      if (!isAudioAvailable(activeAlbumId)) {
-        // No local audio for this album — open its streaming page
+      // If audio is not available, playing should never break. It should open HyperFollow.
+      if (!AUDIO_AVAILABLE) {
         openStreaming(activeAlbumId);
         return;
       }
 
-      // Audio exists: play from this album's first track
-      if (a.firstTrackIndex !== null && a.firstTrackIndex !== undefined) {
-        playTrackByIndex(a.firstTrackIndex);
+      const a = albums[activeAlbumId] || albums.recursive;
+      if (a.firstTrackIndex === null || a.firstTrackIndex === undefined) {
+        openAlbumModal("recursive");
+        playTrackByIndex(albums.recursive.firstTrackIndex);
         return;
       }
-
-      // "label" view — play from recursive
-      openAlbumModal("recursive");
-      playTrackByIndex(albums.recursive.firstTrackIndex);
+      playTrackByIndex(a.firstTrackIndex);
     }
 
     function loadTrackByIndex(trackIndex, { autoPlay = false } = {}) {
-      if (!isAudioAvailable(activeAlbumId)) {
+      if (!AUDIO_AVAILABLE) {
         openStreaming(activeAlbumId);
         return;
       }
@@ -1018,7 +982,7 @@
     }
 
     function togglePlay() {
-      if (!isAudioAvailable(activeAlbumId)) {
+      if (!AUDIO_AVAILABLE) {
         openStreaming(activeAlbumId);
         return;
       }
@@ -1038,7 +1002,7 @@
     }
 
     function nextTrack() {
-      if (!isAudioAvailable(activeAlbumId)) {
+      if (!AUDIO_AVAILABLE) {
         openStreaming(activeAlbumId);
         return;
       }
@@ -1052,7 +1016,7 @@
     }
 
     function prevTrack() {
-      if (!isAudioAvailable(activeAlbumId)) {
+      if (!AUDIO_AVAILABLE) {
         openStreaming(activeAlbumId);
         return;
       }
@@ -1090,13 +1054,13 @@
         row.className = "track-item glass rounded-lg p-4 flex items-center gap-4 group cursor-pointer";
 
         // Clicking the row:
-        // If audio exists for this album, play. If not, open that album's stream link.
+        // If audio exists, play. If not, open HyperFollow.
         row.addEventListener("click", () => {
-          if (isAudioAvailable(activeAlbumId)) playTrackByIndex(trackIndex);
+          if (AUDIO_AVAILABLE) playTrackByIndex(trackIndex);
           else openStreaming(activeAlbumId);
         });
 
-        const durText = (isAudioAvailable(activeAlbumId) && durationCacheSec.has(trackIndex))
+        const durText = (AUDIO_AVAILABLE && durationCacheSec.has(trackIndex))
           ? formatSeconds(durationCacheSec.get(trackIndex))
           : "..:..";
 
@@ -1133,7 +1097,7 @@
         if (playBtnEl) {
           playBtnEl.addEventListener("click", (e) => {
             e.stopPropagation();
-            if (isAudioAvailable(activeAlbumId)) playTrackByIndex(trackIndex);
+            if (AUDIO_AVAILABLE) playTrackByIndex(trackIndex);
             else openStreaming(activeAlbumId);
           });
         }
@@ -1158,7 +1122,7 @@
     }
 
     function probeOneTrackDuration(trackIndex) {
-      if (!isAudioAvailable(activeAlbumId)) return Promise.resolve(null);
+      if (!AUDIO_AVAILABLE) return Promise.resolve(null);
       if (durationCacheSec.has(trackIndex)) return Promise.resolve(durationCacheSec.get(trackIndex));
 
       const t = allTracks[trackIndex];
@@ -1186,7 +1150,7 @@
     }
 
     async function probeDurationsForActiveAlbumSequential() {
-      if (!isAudioAvailable(activeAlbumId)) return;
+      if (!AUDIO_AVAILABLE) return;
 
       const indices = getAlbumTrackIndices(activeAlbumId);
       if (!indices.length) return;
@@ -1270,7 +1234,7 @@
 
     if (progressWrap) {
       progressWrap.addEventListener("click", (e) => {
-        if (!isAudioAvailable(activeAlbumId)) {
+        if (!AUDIO_AVAILABLE) {
           openStreaming(activeAlbumId);
           return;
         }
@@ -1307,8 +1271,8 @@
       await loadTrackMeta();
       wireMetaModalClose();
 
-      // Probe each album independently.
-      await checkAudioAvailability();
+      // Detect if MP3s exist on the deployed site.
+      AUDIO_AVAILABLE = await checkAudioAvailability();
 
       setHero("label");
       buildTrackListForActiveAlbum();
@@ -1316,8 +1280,7 @@
 
       warmThumbnailsForActiveAlbumSequential();
 
-      const anyAudio = Object.values(ALBUM_AUDIO_AVAILABLE).some(Boolean);
-      if (anyAudio) {
+      if (AUDIO_AVAILABLE) {
         probeDurationsForActiveAlbumSequential();
       } else {
         applyStreamingModeUI();

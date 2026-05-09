@@ -646,7 +646,7 @@
       { albumId: "gravelsoulx", title: "Fire on My Left, Frost on My Right", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/05-fire-on-my-left-frost-on-my-right.png", src: "audio/GravelSoulX/05-fire-on-my-left-frost-on-my-right.mp3" },
       { albumId: "gravelsoulx", title: "Raise That Wildfire High", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/06-raise-that-wildfire-high.png", src: "audio/GravelSoulX/06-raise-that-wildfire-high.mp3" },
       { albumId: "gravelsoulx", title: "Dustborn Circuit", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/07-dustborn-circuit.png", src: "audio/GravelSoulX/07-dustborn-circuit.mp3" },
-      { albumId: "gravelsoulx", title: "Dustborn Circuit (GravelSoul)", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/08-dustborn-circuit-gravelsoulx.png", src: "audio/GravelSoulX/08-dustborn-circuit-GravelSoulx.mp3" },
+      { albumId: "gravelsoulx", title: "Dustborn Circuit (GravelSoul)", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/08-dustborn-circuit-gravelsoulx.png", src: "audio/GravelSoulX/08-dustborn-circuit-GravelSoulX.mp3" },
       { albumId: "gravelsoulx", title: "The End Is Waiting", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/09-the-end-is-waiting.png", src: "audio/GravelSoulX/09-the-end-is-waiting.mp3" }
     ];
 
@@ -785,39 +785,20 @@
       window.open(link, "_blank", "noopener");
     }
 
-    function probeAudioSrc(src) {
-      // Uses an Audio element instead of fetch() so it works on both
-      // file:// (local dev) and https:// (deployed). fetch() is blocked
-      // on file:// by browsers for security, causing false negatives.
-      if (!src) return Promise.resolve(false);
-
-      return new Promise((resolve) => {
-        const a = new Audio();
-        a.preload = "metadata";
-
-        const done = (result) => {
-          a.onerror = null;
-          a.oncanplaythrough = null;
-          a.onloadedmetadata = null;
-          a.src = "";
-          resolve(result);
-        };
-
-        // loadedmetadata fires as soon as the browser has confirmed the file exists
-        // and can read basic info — reliable on both file:// and http(s)://
-        a.onloadedmetadata = () => done(true);
-
-        // error fires if the file is missing or unreadable
-        a.onerror = () => done(false);
-
-        // Safety timeout — if neither fires within 5s, assume unavailable
-        const timeout = setTimeout(() => done(false), 5000);
-        a.onloadedmetadata = () => { clearTimeout(timeout); done(true); };
-        a.onerror = () => { clearTimeout(timeout); done(false); };
-
-        a.src = src;
-        a.load();
-      });
+    async function probeAudioSrc(src) {
+      if (!src) return false;
+      try {
+        const head = await fetch(src, { method: "HEAD", cache: "no-store" });
+        if (head.ok) return true;
+        const range = await fetch(src, {
+          method: "GET",
+          headers: { "Range": "bytes=0-1" },
+          cache: "no-store"
+        });
+        return range.ok;
+      } catch (e) {
+        return false;
+      }
     }
 
     async function checkAudioAvailability() {

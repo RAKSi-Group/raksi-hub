@@ -8,18 +8,13 @@
   <link rel="icon" href="data:,">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-
-  <!-- Reads embedded MP3 cover art (ID3 tags).
-       Note: This only works when MP3s are actually downloadable from the same origin. -->
   <script src="https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js"></script>
 
   <style>
     :root {
       --primary-cyan: #00d4ff;
-      --deep-blue: #0a1628;
       --electric-pink: #ff006e;
       --lava-orange: #ff4d00;
-      --ice-blue: #e0f7fa;
     }
 
     body {
@@ -37,70 +32,6 @@
       border-radius: 4px;
     }
 
-    .glitch { position: relative; animation: glitch-skew 1s infinite linear alternate-reverse; }
-    .glitch::before, .glitch::after {
-      content: attr(data-text);
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-    }
-    .glitch::before {
-      left: 2px;
-      text-shadow: -2px 0 var(--electric-pink);
-      clip: rect(44px, 450px, 56px, 0);
-      animation: glitch-anim 5s infinite linear alternate-reverse;
-    }
-    .glitch::after {
-      left: -2px;
-      text-shadow: -2px 0 var(--primary-cyan);
-      clip: rect(44px, 450px, 56px, 0);
-      animation: glitch-anim2 5s infinite linear alternate-reverse;
-    }
-    @keyframes glitch-anim {
-      0% { clip: rect(12px, 9999px, 52px, 0); }
-      20% { clip: rect(65px, 9999px, 11px, 0); }
-      40% { clip: rect(26px, 9999px, 89px, 0); }
-      60% { clip: rect(78px, 9999px, 14px, 0); }
-      80% { clip: rect(33px, 9999px, 66px, 0); }
-      100% { clip: rect(55px, 9999px, 99px, 0); }
-    }
-    @keyframes glitch-anim2 {
-      0% { clip: rect(65px, 9999px, 99px, 0); }
-      20% { clip: rect(12px, 9999px, 52px, 0); }
-      40% { clip: rect(78px, 9999px, 14px, 0); }
-      60% { clip: rect(33px, 9999px, 66px, 0); }
-      80% { clip: rect(26px, 9999px, 89px, 0); }
-      100% { clip: rect(44px, 9999px, 11px, 0); }
-    }
-
-    .bar {
-      width: 4px;
-      background: linear-gradient(to top, var(--electric-pink), var(--primary-cyan));
-      animation: bounce 1.2s ease-in-out infinite;
-      border-radius: 2px;
-    }
-    .bar:nth-child(odd) { animation-duration: 0.8s; }
-    .bar:nth-child(2n) { animation-duration: 1.1s; }
-    .bar:nth-child(3n) { animation-duration: 1.3s; }
-    .bar:nth-child(4n) { animation-duration: 0.9s; }
-    @keyframes bounce {
-      0%, 100% { height: 10px; }
-      50% { height: 40px; }
-    }
-
-    .album-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-    .album-card:hover {
-      transform: translateY(-8px) scale(1.02);
-      box-shadow: 0 20px 40px -10px rgba(0, 212, 255, 0.3);
-    }
-
-    .gradient-text {
-      background: linear-gradient(135deg, #00d4ff 0%, #ff006e 50%, #ff4d00 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
     .glass {
       background: rgba(255, 255, 255, 0.03);
       backdrop-filter: blur(10px);
@@ -112,10 +43,24 @@
       background-size: 400% 400%;
       animation: gradient-shift 15s ease infinite;
     }
+
     @keyframes gradient-shift {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #00d4ff 0%, #ff006e 50%, #ff4d00 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .album-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    .album-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 40px -10px rgba(0, 212, 255, 0.3);
     }
 
     .track-item { transition: all 0.3s ease; }
@@ -125,20 +70,40 @@
     }
 
     .play-pulse { animation: pulse-glow 2s infinite; }
+
     @keyframes pulse-glow {
       0%, 100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.7); }
       50% { box-shadow: 0 0 0 20px rgba(0, 212, 255, 0); }
     }
 
+    .bar {
+      width: 4px;
+      background: linear-gradient(to top, var(--electric-pink), var(--primary-cyan));
+      animation: bounce 1.2s ease-in-out infinite;
+      border-radius: 2px;
+    }
+
+    .bar:nth-child(odd) { animation-duration: 0.8s; }
+    .bar:nth-child(2n) { animation-duration: 1.1s; }
+    .bar:nth-child(3n) { animation-duration: 1.3s; }
+
+    @keyframes bounce {
+      0%, 100% { height: 10px; }
+      50% { height: 40px; }
+    }
+
     input[type=range] { -webkit-appearance: none; background: transparent; }
+
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      height: 12px; width: 12px;
+      height: 12px;
+      width: 12px;
       border-radius: 50%;
       background: var(--primary-cyan);
       cursor: pointer;
       margin-top: -4px;
     }
+
     input[type=range]::-webkit-slider-runnable-track {
       width: 100%;
       height: 4px;
@@ -146,13 +111,8 @@
       border-radius: 2px;
     }
 
-    /* Hero background blobs must not steal clicks */
     #top .absolute.inset-0.opacity-30 { pointer-events: none; }
-
-    /* Ensure streaming button is clickable */
     #streamBtn { position: relative; z-index: 50; pointer-events: auto; }
-
-    /* Modal */
     #trackMetaModal { display: none; }
   </style>
 </head>
@@ -162,9 +122,7 @@
   <nav class="fixed top-0 w-full z-50 glass border-b border-white/10">
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-pink-600 flex items-center justify-center font-display font-bold text-black text-lg">
-          K8
-        </div>
+        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-pink-600 flex items-center justify-center font-display font-bold text-black text-lg">K8</div>
         <span class="font-display text-xl tracking-wider font-bold">KESH8FOUR</span>
       </div>
 
@@ -207,7 +165,7 @@
             NOW STREAMING
           </div>
 
-          <h1 id="heroTitle" class="font-display text-5xl md:text-7xl font-black leading-tight glitch" data-text="KESH8FOUR MUSIC">
+          <h1 id="heroTitle" class="font-display text-5xl md:text-7xl font-black leading-tight">
             KESH8FOUR<br>
             <span class="gradient-text">MUSIC</span>
           </h1>
@@ -222,7 +180,7 @@
               PLAY NOW
             </button>
 
-            <a id="streamBtn" href="#" target="_blank" rel="noopener" class="glass px-8 py-4 rounded-full font-bold hover:bg-white/10 transition-colors flex items-center gap-3">
+            <a id="streamBtn" href="#" target="_blank" rel="noopener" class="glass px-8 py-4 rounded-full font-bold hover:bg-white/10 transition-colors flex items-center gap-3 hidden">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
               </svg>
@@ -257,14 +215,6 @@
           <div class="absolute inset-0 bg-gradient-to-r from-cyan-500 to-pink-600 rounded-2xl blur-2xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
           <div class="relative rounded-2xl overflow-hidden shadow-2xl transform group-hover:scale-[1.02] transition-transform duration-500">
             <img id="heroImage" src="images/album/kesh8four.png" alt="Kesh8Four" class="w-full aspect-square object-cover">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-8">
-              <div class="flex items-center gap-3 text-white font-bold">
-                <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
-                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                </div>
-                VIEW ALBUM
-              </div>
-            </div>
           </div>
 
           <div class="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-pink-600/20 backdrop-blur border border-pink-500/30 flex items-center justify-center animate-bounce">
@@ -279,7 +229,6 @@
     <div class="bar h-8"></div><div class="bar h-12"></div><div class="bar h-6"></div><div class="bar h-16"></div><div class="bar h-10"></div>
     <div class="bar h-14"></div><div class="bar h-8"></div><div class="bar h-12"></div><div class="bar h-6"></div><div class="bar h-16"></div>
     <div class="bar h-10"></div><div class="bar h-14"></div><div class="bar h-8"></div><div class="bar h-12"></div><div class="bar h-6"></div>
-    <div class="bar h-16"></div><div class="bar h-10"></div><div class="bar h-14"></div><div class="bar h-8"></div><div class="bar h-12"></div>
   </div>
 
   <section id="albums" class="py-20 px-6">
@@ -301,14 +250,7 @@
         <div class="album-card group cursor-pointer" data-category="albums" onclick="openAlbumModal('recursive')">
           <div class="relative rounded-xl overflow-hidden mb-4">
             <img src="images/album/recursive-gaze.png" alt="The Recursive Gaze" class="w-full aspect-square object-cover">
-            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-              <button class="w-14 h-14 rounded-full bg-cyan-500 flex items-center justify-center hover:scale-110 transition-transform" onclick="event.stopPropagation(); openAlbumModal('recursive'); heroPlay();" type="button">
-                <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-              </button>
-            </div>
-            <div class="absolute top-4 right-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur text-xs font-bold text-cyan-400 border border-cyan-500/30">
-              ALBUM
-            </div>
+            <div class="absolute top-4 right-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur text-xs font-bold text-cyan-400 border border-cyan-500/30">ALBUM</div>
           </div>
           <h3 class="font-display text-xl font-bold mb-1 group-hover:text-cyan-400 transition-colors">The Recursive Gaze</h3>
           <p class="text-gray-500 text-sm mb-3">Cinematic Dark . 2025</p>
@@ -317,14 +259,7 @@
         <div class="album-card group cursor-pointer" data-category="albums" onclick="openAlbumModal('sojourn')">
           <div class="relative rounded-xl overflow-hidden mb-4">
             <img src="images/album/sojourn.png" alt="Sojourn" class="w-full aspect-square object-cover">
-            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-              <button class="w-14 h-14 rounded-full bg-pink-500 flex items-center justify-center hover:scale-110 transition-transform" onclick="event.stopPropagation(); openAlbumModal('sojourn'); heroPlay();" type="button">
-                <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-              </button>
-            </div>
-            <div class="absolute top-4 right-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur text-xs font-bold text-pink-400 border border-pink-500/30">
-              ALBUM
-            </div>
+            <div class="absolute top-4 right-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur text-xs font-bold text-pink-400 border border-pink-500/30">ALBUM</div>
           </div>
           <h3 class="font-display text-xl font-bold mb-1 group-hover:text-pink-400 transition-colors">SOJOURN</h3>
           <p class="text-gray-500 text-sm mb-3">World Fusion . 2025</p>
@@ -332,15 +267,8 @@
 
         <div class="album-card group cursor-pointer" data-category="albums" onclick="openAlbumModal('gravelsoulx')">
           <div class="relative rounded-xl overflow-hidden mb-4">
-            <img src="images/album/gravelsoulx.png" alt="GravelSoul X . Origin Pulse" class="w-full aspect-square object-cover">
-            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-              <button class="w-14 h-14 rounded-full bg-orange-500 flex items-center justify-center hover:scale-110 transition-transform" onclick="event.stopPropagation(); openAlbumModal('gravelsoulx'); heroPlay();" type="button">
-                <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-              </button>
-            </div>
-            <div class="absolute top-4 right-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur text-xs font-bold text-orange-300 border border-orange-500/30">
-              ALBUM
-            </div>
+            <img src="images/album/gravelsoulx.png" alt="GravelSoul X" class="w-full aspect-square object-cover">
+            <div class="absolute top-4 right-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur text-xs font-bold text-orange-300 border border-orange-500/30">ALBUM</div>
           </div>
           <h3 class="font-display text-xl font-bold mb-1 group-hover:text-orange-300 transition-colors">GravelSoul X</h3>
           <p class="text-gray-500 text-sm mb-3">Origin Pulse . 2025</p>
@@ -367,11 +295,10 @@
       <div class="glass rounded-2xl p-8 md:p-12 relative overflow-hidden">
         <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-500"></div>
         <p class="text-gray-300 text-lg leading-relaxed mb-6">
-          Kesh8Four is an independent music project exploring the intersection of cinematic
-          soundscapes and electronic production.
+          Kesh8Four is an independent music project exploring cinematic soundscapes, electronic production, and experimental album worlds.
         </p>
         <p class="text-gray-400 leading-relaxed">
-          Built as a clean player first, with streaming as the public source of truth.
+          The Recursive Gaze is live on streaming platforms. Other albums can be played locally on this site when uploaded.
         </p>
       </div>
     </div>
@@ -427,7 +354,6 @@
     </div>
   </section>
 
-  <!-- PLAYER BAR -->
   <div id="playerBar" class="fixed bottom-0 left-0 w-full glass border-t border-white/10 transform translate-y-full transition-transform duration-500 z-50">
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center gap-4">
       <img id="playerArt" src="" class="w-14 h-14 rounded-lg object-cover hidden sm:block" alt="">
@@ -470,7 +396,6 @@
     </div>
   </div>
 
-  <!-- TRACK META MODAL -->
   <div id="trackMetaModal" class="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm px-4 py-8 overflow-y-auto">
     <div class="max-w-4xl mx-auto glass rounded-2xl border border-white/10 shadow-2xl">
       <div class="flex items-start justify-between gap-4 p-6 border-b border-white/10">
@@ -499,126 +424,21 @@
   </div>
 
   <script>
-    // -----------------------------------
-    // CONFIG
-    // -----------------------------------
-    const DEFAULT_HYPERFOLLOW = "https://distrokid.com/hyperfollow/kesh8four/the-recursive-gaze";
+    const RECURSIVE_HYPERFOLLOW = "https://distrokid.com/hyperfollow/kesh8four/the-recursive-gaze";
 
-    // Per-album audio availability. Populated during init by probing one track per album.
-    // Falls back gracefully to streaming per-album rather than global on/off.
-    const ALBUM_AUDIO_AVAILABLE = {};
-
-    // Legacy alias used throughout — checks the active album.
-    function isAudioAvailable(albumId) {
-      return ALBUM_AUDIO_AVAILABLE[albumId || activeAlbumId] === true;
-    }
-
-    // -----------------------------------
-    // TRACK METADATA + LYRICS
-    // -----------------------------------
     let TRACK_META = {};
+    let activeAlbumId = "label";
+    let currentTrackIndex = 0;
+    let uiTimer = null;
 
-    async function loadTrackMeta() {
-      try {
-        const res = await fetch("data/track-meta.json", { cache: "no-store" });
-        if (!res.ok) return;
-        TRACK_META = await res.json();
-      } catch (e) {
-        // local only
-      }
-    }
+    const audio = new Audio();
+    audio.preload = "metadata";
 
-    function getTrackMeta(track) {
-      if (!track || !track.src) return null;
-      return TRACK_META[track.src] || null;
-    }
+    const durationCacheSec = new Map();
+    const audioAvailability = new Map();
+    const coverUrlCache = new Map();
+    const coverFetchInFlight = new Map();
 
-    function escapeHtml(str) {
-      return String(str ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    async function openTrackMetaModal(track) {
-      const modal = document.getElementById("trackMetaModal");
-      const titleEl = document.getElementById("metaTitle");
-      const subEl = document.getElementById("metaSub");
-      const bodyEl = document.getElementById("metaBody");
-      const lyricsEl = document.getElementById("lyricsBody");
-      const lyricsStatus = document.getElementById("lyricsStatus");
-
-      if (!modal || !titleEl || !subEl || !bodyEl || !lyricsEl || !lyricsStatus) return;
-
-      const meta = getTrackMeta(track);
-
-      titleEl.textContent = track?.title || "Track";
-      subEl.textContent = track?.artist ? track.artist : "";
-
-      if (!meta) {
-        bodyEl.innerHTML = "<div style='opacity:.85;'>No metadata found for this track yet.</div>";
-        lyricsEl.textContent = "";
-        lyricsStatus.textContent = "";
-        modal.style.display = "block";
-        return;
-      }
-
-      const bpmText = meta.bpm ? `${meta.bpm.start} to ${meta.bpm.end} BPM` : "";
-      const weird = meta.controlSettings ? `${meta.controlSettings.weirdnessPercent}%` : "";
-      const style = meta.controlSettings ? `${meta.controlSettings.styleStrengthPercent}%` : "";
-
-      bodyEl.innerHTML = `
-        <div><b>Title:</b> ${escapeHtml(meta.title || "")}</div>
-        <div><b>Artist:</b> ${escapeHtml(meta.artist || "")}</div>
-        <div><b>Date:</b> ${escapeHtml(meta.date || "")} at ${escapeHtml(meta.time || "")}</div>
-        <div style="margin-top:8px;"><b>Caption:</b> ${escapeHtml(meta.caption || "")}</div>
-        <div style="margin-top:8px;"><b>Style tags:</b> ${escapeHtml((meta.tags || []).join(", "))}</div>
-        <div style="margin-top:8px;"><b>BPM:</b> ${escapeHtml(bpmText)}</div>
-        <div style="margin-top:8px;"><b>Control settings:</b> Weirdness ${escapeHtml(weird)}. Style Strength ${escapeHtml(style)}</div>
-      `;
-
-      lyricsEl.textContent = "";
-      lyricsStatus.textContent = "Loading...";
-
-      if (meta.lyricsFile) {
-        try {
-          const lr = await fetch(meta.lyricsFile, { cache: "no-store" });
-          if (lr.ok) {
-            const t = await lr.text();
-            lyricsEl.textContent = t.trim();
-            lyricsStatus.textContent = "";
-          } else {
-            lyricsStatus.textContent = "Lyrics not found.";
-          }
-        } catch (e) {
-          lyricsStatus.textContent = "Lyrics failed to load.";
-        }
-      } else {
-        lyricsStatus.textContent = "No lyrics linked.";
-      }
-
-      modal.style.display = "block";
-    }
-
-    function wireMetaModalClose() {
-      const modal = document.getElementById("trackMetaModal");
-      const closeBtn = document.getElementById("metaCloseBtn");
-      if (!modal || !closeBtn) return;
-
-      closeBtn.addEventListener("click", () => (modal.style.display = "none"));
-      modal.addEventListener("click", (e) => {
-        if (e.target === modal) modal.style.display = "none";
-      });
-      window.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") modal.style.display = "none";
-      });
-    }
-
-    // -----------------------------------
-    // DATA
-    // -----------------------------------
     const allTracks = [
       { albumId: "recursive", title: "System Online", artist: "Kesh8Four", art: "images/tracks/01-system-online.png", src: "audio/Recursive_Gaze_Album/01-system-online.mp3" },
       { albumId: "recursive", title: "Shadow or Stone", artist: "Kesh8Four", art: "images/tracks/02-shadow-or-stone.png", src: "audio/Recursive_Gaze_Album/02-shadow-or-stone.mp3" },
@@ -646,7 +466,7 @@
       { albumId: "gravelsoulx", title: "Fire on My Left, Frost on My Right", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/05-fire-on-my-left-frost-on-my-right.png", src: "audio/GravelSoulX/05-fire-on-my-left-frost-on-my-right.mp3" },
       { albumId: "gravelsoulx", title: "Raise That Wildfire High", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/06-raise-that-wildfire-high.png", src: "audio/GravelSoulX/06-raise-that-wildfire-high.mp3" },
       { albumId: "gravelsoulx", title: "Dustborn Circuit", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/07-dustborn-circuit.png", src: "audio/GravelSoulX/07-dustborn-circuit.mp3" },
-      { albumId: "gravelsoulx", title: "Dustborn Circuit (GravelSoul)", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/08-dustborn-circuit-gravelsoulx.png", src: "audio/GravelSoulX/08-dustborn-circuit-GravelSoulx.mp3" },
+      { albumId: "gravelsoulx", title: "Dustborn Circuit (GravelSoul)", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/08-dustborn-circuit-gravelsoulx.png", src: "audio/GravelSoulX/08-dustborn-circuit-GravelSoulX.mp3" },
       { albumId: "gravelsoulx", title: "The End Is Waiting", artist: "Kesh8Four", art: "images/tracks/gravelsoulx/09-the-end-is-waiting.png", src: "audio/GravelSoulX/09-the-end-is-waiting.mp3" }
     ];
 
@@ -661,7 +481,7 @@
         badge: "LABEL",
         tracksTitle: "FEATURED TRACKS",
         firstTrackIndex: null,
-        hyperfollow: DEFAULT_HYPERFOLLOW
+        hyperfollow: RECURSIVE_HYPERFOLLOW
       },
       recursive: {
         id: "recursive",
@@ -671,9 +491,9 @@
         year: "2025",
         image: "images/album/recursive-gaze.png",
         badge: "ALBUM",
-        hyperfollow: DEFAULT_HYPERFOLLOW,
         tracksTitle: "THE RECURSIVE GAZE . TRACKLIST",
-        firstTrackIndex: 0
+        firstTrackIndex: 0,
+        hyperfollow: RECURSIVE_HYPERFOLLOW
       },
       sojourn: {
         id: "sojourn",
@@ -685,7 +505,7 @@
         badge: "ALBUM",
         tracksTitle: "SOJOURN . TRACKLIST",
         firstTrackIndex: 10,
-        hyperfollow: DEFAULT_HYPERFOLLOW
+        hyperfollow: ""
       },
       gravelsoulx: {
         id: "gravelsoulx",
@@ -697,24 +517,9 @@
         badge: "ALBUM",
         tracksTitle: "GRAVELSOUL X . ORIGIN PULSE . TRACKLIST",
         firstTrackIndex: 17,
-        hyperfollow: DEFAULT_HYPERFOLLOW
+        hyperfollow: ""
       }
     };
-
-    // -----------------------------------
-    // STATE
-    // -----------------------------------
-    let activeAlbumId = "label";
-
-    const audio = new Audio();
-    audio.preload = "metadata";
-
-    let currentTrackIndex = 0;
-    let uiTimer = null;
-
-    const durationCacheSec = new Map();
-    const coverUrlCache = new Map();
-    const coverFetchInFlight = new Map();
 
     const el = (id) => document.getElementById(id);
 
@@ -733,7 +538,58 @@
       const s = Math.max(0, Math.floor(sec || 0));
       const m = Math.floor(s / 60);
       const r = s % 60;
-      return `${m}:${String(r).padStart(2, "0")}`;
+      return ${m}:${String(r).padStart(2, "0")};
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    async function loadTrackMeta() {
+      try {
+        const res = await fetch("data/track-meta.json", { cache: "no-store" });
+        if (res.ok) TRACK_META = await res.json();
+      } catch (e) {}
+    }
+
+    function getTrackMeta(track) {
+      if (!track || !track.src) return null;
+      return TRACK_META[track.src] || null;
+    }
+
+    async function checkTrackAudio(trackIndex) {
+      const track = allTracks[trackIndex];
+      if (!track || !track.src) return false;
+
+      try {
+        const head = await fetch(track.src, { method: "HEAD", cache: "no-store" });
+        if (head.ok) return true;
+      } catch (e) {}
+
+      try {
+        const range = await fetch(track.src, {
+          method: "GET",
+          headers: { "Range": "bytes=0-1" },
+          cache: "no-store"
+        });
+        return range.ok;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    async function checkAllAudio() {
+      const results = await Promise.all(allTracks.map((_, i) => checkTrackAudio(i)));
+      results.forEach((ok, i) => audioAvailability.set(i, ok));
+    }
+
+    function isTrackAudioAvailable(trackIndex) {
+      return audioAvailability.get(trackIndex) === true;
     }
 
     function getAlbumTrackIndices(albumId) {
@@ -741,6 +597,27 @@
         return allTracks.map((_, i) => i).filter(i => allTracks[i].albumId === "recursive");
       }
       return allTracks.map((_, i) => i).filter(i => allTracks[i].albumId === albumId);
+    }
+
+    function getAlbumHasAudio(albumId) {
+      return getAlbumTrackIndices(albumId).some(i => isTrackAudioAvailable(i));
+    }
+
+    function getFallbackArt(trackIndex) {
+      const t = allTracks[trackIndex];
+      if (!t) return "images/album/kesh8four.png";
+      return t.art || t.fallbackArt || "images/album/kesh8four.png";
+    }
+
+    function openStreaming(albumId = activeAlbumId) {
+      const a = albums[albumId] || albums.recursive;
+
+      if (!a.hyperfollow) {
+        alert(${a.titleLine} ${a.accent} is not on streaming platforms yet.);
+        return;
+      }
+
+      window.open(a.hyperfollow, "_blank", "noopener");
     }
 
     function stopUITimer() {
@@ -758,108 +635,21 @@
 
     function updateUI(currentSec, totalSec) {
       const pct = totalSec > 0 ? (currentSec / totalSec) * 100 : 0;
-      if (progressBar) progressBar.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+      if (progressBar) progressBar.style.width = ${Math.min(100, Math.max(0, pct))}%;
       if (currentTimeEl) currentTimeEl.textContent = formatSeconds(currentSec);
       if (totalTimeEl) totalTimeEl.textContent = formatSeconds(totalSec);
     }
 
     function updatePlayButton() {
       if (!playBtn) return;
+
       playBtn.innerHTML = (!audio.paused)
         ? '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'
         : '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
     }
 
-    function getFallbackArt(trackIndex) {
-      const t = allTracks[trackIndex];
-      if (!t) return "";
-      return t.art || t.fallbackArt || "images/album/kesh8four.png";
-    }
-
-    function openStreaming(albumId = activeAlbumId) {
-      const a = albums[albumId] || albums.label;
-      // Only use DEFAULT_HYPERFOLLOW if the album has no dedicated link.
-      // Sojourn and GravelSoulX don't have their own HyperFollow yet —
-      // in that case fall back to Recursive Gaze as the label's main streaming page.
-      const link = a.hyperfollow || DEFAULT_HYPERFOLLOW;
-      window.open(link, "_blank", "noopener");
-    }
-
-    function probeAudioSrc(src) {
-      // Uses an Audio element instead of fetch() so it works on both
-      // file:// (local dev) and https:// (deployed). fetch() is blocked
-      // on file:// by browsers for security, causing false negatives.
-      if (!src) return Promise.resolve(false);
-
-      return new Promise((resolve) => {
-        const a = new Audio();
-        a.preload = "metadata";
-
-        const done = (result) => {
-          a.onerror = null;
-          a.oncanplaythrough = null;
-          a.onloadedmetadata = null;
-          a.src = "";
-          resolve(result);
-        };
-
-        // loadedmetadata fires as soon as the browser has confirmed the file exists
-        // and can read basic info — reliable on both file:// and http(s)://
-        a.onloadedmetadata = () => done(true);
-
-        // error fires if the file is missing or unreadable
-        a.onerror = () => done(false);
-
-        // Safety timeout — if neither fires within 5s, assume unavailable
-        const timeout = setTimeout(() => done(false), 5000);
-        a.onloadedmetadata = () => { clearTimeout(timeout); done(true); };
-        a.onerror = () => { clearTimeout(timeout); done(false); };
-
-        a.src = src;
-        a.load();
-      });
-    }
-
-    async function checkAudioAvailability() {
-      // Probe one track per album independently so each album knows its own state.
-      const albumIds = ["recursive", "sojourn", "gravelsoulx"];
-      await Promise.all(albumIds.map(async (albumId) => {
-        const probe = allTracks.find(t => t.albumId === albumId)?.src;
-        ALBUM_AUDIO_AVAILABLE[albumId] = await probeAudioSrc(probe);
-      }));
-      // "label" view uses recursive tracks
-      ALBUM_AUDIO_AVAILABLE["label"] = ALBUM_AUDIO_AVAILABLE["recursive"];
-    }
-
-    function applyStreamingModeUI() {
-      // Only called when zero albums have local audio (e.g. live deployed site with no MP3s).
-      const heroDesc = el("heroDesc");
-      const heroPlayBtn = el("heroPlayBtn");
-
-      if (heroDesc) {
-        heroDesc.textContent = "Streaming is live. This site is a visual hub, with playback handled by official platforms.";
-      }
-
-      if (heroPlayBtn) {
-        heroPlayBtn.innerHTML = `
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-          </svg>
-          LISTEN NOW
-        `;
-        heroPlayBtn.classList.remove("play-pulse");
-      }
-
-      if (playerBar) playerBar.classList.add("translate-y-full");
-      stopUITimer();
-      audio.pause();
-      audio.src = "";
-    }
-
     function getCoverArtUrlFromId3(trackIndex) {
-      // Only attempt ID3 reads when audio exists, otherwise it is pointless and can error.
-      if (!isAudioAvailable(activeAlbumId)) return Promise.resolve(null);
-
+      if (!isTrackAudioAvailable(trackIndex)) return Promise.resolve(null);
       if (coverUrlCache.has(trackIndex)) return Promise.resolve(coverUrlCache.get(trackIndex));
       if (coverFetchInFlight.has(trackIndex)) return coverFetchInFlight.get(trackIndex);
 
@@ -927,64 +717,71 @@
       const heroBadge = el("heroBadge");
       const tracksTitle = el("tracksTitle");
       const streamBtn = el("streamBtn");
+      const heroPlayBtn = el("heroPlayBtn");
 
       if (heroTitle) {
-        heroTitle.setAttribute("data-text", `${a.titleLine} ${a.accent}`);
-        heroTitle.innerHTML = `${a.titleLine}<br><span class="gradient-text">${a.accent}</span>`;
+        heroTitle.innerHTML = ${a.titleLine}<br><span class="gradient-text">${a.accent}</span>;
       }
-      if (heroDesc && isAudioAvailable(a.id)) heroDesc.textContent = a.desc;
+
+      if (heroDesc) heroDesc.textContent = a.desc;
       if (heroYear) heroYear.textContent = a.year;
+
       if (heroImage) {
         heroImage.src = a.image;
         heroImage.alt = a.titleLine;
       }
-      if (heroBadge) heroBadge.textContent = a.badge || "ALBUM";
 
-      // Always show streaming button, always set a working link.
+      if (heroBadge) heroBadge.textContent = a.badge || "ALBUM";
+      if (tracksTitle) tracksTitle.textContent = a.tracksTitle || "FEATURED TRACKS";
+
       if (streamBtn) {
-        const link = a.hyperfollow || DEFAULT_HYPERFOLLOW;
-        streamBtn.href = link;
-        streamBtn.classList.remove("hidden");
+        if (a.hyperfollow) {
+          streamBtn.href = a.hyperfollow;
+          streamBtn.classList.remove("hidden");
+        } else {
+          streamBtn.href = "#";
+          streamBtn.classList.add("hidden");
+        }
       }
 
-      if (tracksTitle) tracksTitle.textContent = a.tracksTitle || "FEATURED TRACKS";
+      if (heroPlayBtn) {
+        if (getAlbumHasAudio(a.id)) {
+          heroPlayBtn.innerHTML = '<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>PLAY NOW';
+        } else if (a.hyperfollow) {
+          heroPlayBtn.innerHTML = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>LISTEN NOW';
+        } else {
+          heroPlayBtn.innerHTML = '<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>PLAY NOW';
+        }
+      }
     }
 
     function openAlbumModal(albumId) {
       setHero(albumId);
       buildTrackListForActiveAlbum();
       updateHeroStatsForActiveAlbum();
+
       const top = el("top");
       if (top) top.scrollIntoView({ behavior: "smooth" });
 
       warmThumbnailsForActiveAlbumSequential();
-
-      // Only probe durations if audio exists, otherwise it wastes time and fails.
-      if (isAudioAvailable(activeAlbumId)) probeDurationsForActiveAlbumSequential();
+      probeDurationsForActiveAlbumSequential();
     }
 
     function heroPlay() {
       const a = albums[activeAlbumId] || albums.recursive;
+      const indices = getAlbumTrackIndices(a.id);
+      const playable = indices.find(i => isTrackAudioAvailable(i));
 
-      if (!isAudioAvailable(activeAlbumId)) {
-        // No local audio for this album — open its streaming page
-        openStreaming(activeAlbumId);
+      if (playable !== undefined) {
+        playTrackByIndex(playable);
         return;
       }
 
-      // Audio exists: play from this album's first track
-      if (a.firstTrackIndex !== null && a.firstTrackIndex !== undefined) {
-        playTrackByIndex(a.firstTrackIndex);
-        return;
-      }
-
-      // "label" view — play from recursive
-      openAlbumModal("recursive");
-      playTrackByIndex(albums.recursive.firstTrackIndex);
+      openStreaming(a.id);
     }
 
     function loadTrackByIndex(trackIndex, { autoPlay = false } = {}) {
-      if (!isAudioAvailable(activeAlbumId)) {
+      if (!isTrackAudioAvailable(trackIndex)) {
         openStreaming(activeAlbumId);
         return;
       }
@@ -995,13 +792,13 @@
 
       if (playerTitle) playerTitle.textContent = track.title;
       if (playerArtist) playerArtist.textContent = track.artist;
-
       if (playerBar) playerBar.classList.remove("translate-y-full");
 
       audio.src = track.src;
       audio.currentTime = 0;
 
       updatePlayButton();
+
       if (currentTimeEl) currentTimeEl.textContent = "0:00";
       if (totalTimeEl) totalTimeEl.textContent = "0:00";
       if (progressBar) progressBar.style.width = "0%";
@@ -1018,16 +815,15 @@
     }
 
     function togglePlay() {
-      if (!isAudioAvailable(activeAlbumId)) {
-        openStreaming(activeAlbumId);
-        return;
-      }
-
       if (playerBar && playerBar.classList.contains("translate-y-full")) {
         heroPlay();
         return;
       }
-      if (!audio.src) loadTrackByIndex(currentTrackIndex);
+
+      if (!audio.src) {
+        heroPlay();
+        return;
+      }
 
       if (audio.paused) {
         audio.play().then(() => updatePlayButton()).catch(() => {});
@@ -1038,13 +834,11 @@
     }
 
     function nextTrack() {
-      if (!isAudioAvailable(activeAlbumId)) {
+      const list = getAlbumTrackIndices(activeAlbumId).filter(i => isTrackAudioAvailable(i));
+      if (!list.length) {
         openStreaming(activeAlbumId);
         return;
       }
-
-      const list = getAlbumTrackIndices(activeAlbumId);
-      if (!list.length) return;
 
       const pos = Math.max(0, list.indexOf(currentTrackIndex));
       const next = list[(pos + 1) % list.length];
@@ -1052,13 +846,11 @@
     }
 
     function prevTrack() {
-      if (!isAudioAvailable(activeAlbumId)) {
+      const list = getAlbumTrackIndices(activeAlbumId).filter(i => isTrackAudioAvailable(i));
+      if (!list.length) {
         openStreaming(activeAlbumId);
         return;
       }
-
-      const list = getAlbumTrackIndices(activeAlbumId);
-      if (!list.length) return;
 
       const pos = Math.max(0, list.indexOf(currentTrackIndex));
       const prev = list[(pos - 1 + list.length) % list.length];
@@ -1068,6 +860,7 @@
     function buildTrackListForActiveAlbum() {
       const listEl = el("trackList");
       if (!listEl) return;
+
       listEl.innerHTML = "";
 
       const indices = getAlbumTrackIndices(activeAlbumId);
@@ -1085,27 +878,24 @@
         const t = allTracks[trackIndex];
         const n = String(localIdx + 1).padStart(2, "0");
         const grad = gradients[localIdx % gradients.length];
+        const hasAudio = isTrackAudioAvailable(trackIndex);
 
         const row = document.createElement("div");
         row.className = "track-item glass rounded-lg p-4 flex items-center gap-4 group cursor-pointer";
 
-        // Clicking the row:
-        // If audio exists for this album, play. If not, open that album's stream link.
         row.addEventListener("click", () => {
-          if (isAudioAvailable(activeAlbumId)) playTrackByIndex(trackIndex);
+          if (hasAudio) playTrackByIndex(trackIndex);
           else openStreaming(activeAlbumId);
         });
 
-        const durText = (isAudioAvailable(activeAlbumId) && durationCacheSec.has(trackIndex))
-          ? formatSeconds(durationCacheSec.get(trackIndex))
-          : "..:..";
+        const durText = durationCacheSec.has(trackIndex) ? formatSeconds(durationCacheSec.get(trackIndex)) : "..:..";
 
         row.innerHTML = `
           <div class="w-12 h-12 rounded bg-gradient-to-br ${grad} flex items-center justify-center font-bold text-lg">${n}</div>
           <img id="thumb-${trackIndex}" src="${getFallbackArt(trackIndex)}" class="w-12 h-12 rounded object-cover hidden sm:block" alt="">
           <div class="flex-1">
-            <h4 class="font-bold text-white group-hover:text-cyan-400 transition-colors">${t.title}</h4>
-            <p class="text-sm text-gray-500">${t.artist}</p>
+            <h4 class="font-bold text-white group-hover:text-cyan-400 transition-colors">${escapeHtml(t.title)}</h4>
+            <p class="text-sm text-gray-500">${escapeHtml(t.artist)}</p>
           </div>
 
           <span class="text-gray-500 text-sm font-mono" id="dur-${trackIndex}">${durText}</span>
@@ -1133,15 +923,92 @@
         if (playBtnEl) {
           playBtnEl.addEventListener("click", (e) => {
             e.stopPropagation();
-            if (isAudioAvailable(activeAlbumId)) playTrackByIndex(trackIndex);
+            if (hasAudio) playTrackByIndex(trackIndex);
             else openStreaming(activeAlbumId);
           });
         }
 
         listEl.appendChild(row);
 
-        const img = document.getElementById(`thumb-${trackIndex}`);
+        const img = document.getElementById(thumb-${trackIndex});
         applyBestArtToImg(trackIndex, img);
+      });
+    }
+
+    async function openTrackMetaModal(track) {
+      const modal = el("trackMetaModal");
+      const titleEl = el("metaTitle");
+      const subEl = el("metaSub");
+      const bodyEl = el("metaBody");
+      const lyricsEl = el("lyricsBody");
+      const lyricsStatus = el("lyricsStatus");
+
+      if (!modal || !titleEl || !subEl || !bodyEl || !lyricsEl || !lyricsStatus) return;
+
+      const meta = getTrackMeta(track);
+
+      titleEl.textContent = track?.title || "Track";
+      subEl.textContent = track?.artist || "";
+
+      if (!meta) {
+        bodyEl.innerHTML = "<div style='opacity:.85;'>No metadata found for this track yet.</div>";
+        lyricsEl.textContent = "";
+        lyricsStatus.textContent = "";
+        modal.style.display = "block";
+        return;
+      }
+
+      const bpmText = meta.bpm ? ${meta.bpm.start} to ${meta.bpm.end} BPM : "";
+      const weird = meta.controlSettings ? ${meta.controlSettings.weirdnessPercent}% : "";
+      const style = meta.controlSettings ? ${meta.controlSettings.styleStrengthPercent}% : "";
+
+      bodyEl.innerHTML = `
+        <div><b>Title:</b> ${escapeHtml(meta.title || "")}</div>
+        <div><b>Artist:</b> ${escapeHtml(meta.artist || "")}</div>
+        <div><b>Date:</b> ${escapeHtml(meta.date || "")} at ${escapeHtml(meta.time || "")}</div>
+        <div style="margin-top:8px;"><b>Caption:</b> ${escapeHtml(meta.caption || "")}</div>
+        <div style="margin-top:8px;"><b>Style tags:</b> ${escapeHtml((meta.tags || []).join(", "))}</div>
+        <div style="margin-top:8px;"><b>BPM:</b> ${escapeHtml(bpmText)}</div>
+        <div style="margin-top:8px;"><b>Control settings:</b> Weirdness ${escapeHtml(weird)}. Style Strength ${escapeHtml(style)}</div>
+      `;
+
+      lyricsEl.textContent = "";
+      lyricsStatus.textContent = "Loading...";
+
+      if (meta.lyricsFile) {
+        try {
+          const lr = await fetch(meta.lyricsFile, { cache: "no-store" });
+          if (lr.ok) {
+            const t = await lr.text();
+            lyricsEl.textContent = t.trim();
+            lyricsStatus.textContent = "";
+          } else {
+            lyricsStatus.textContent = "Lyrics not found.";
+          }
+        } catch (e) {
+          lyricsStatus.textContent = "Lyrics failed to load.";
+        }
+      } else {
+        lyricsStatus.textContent = "No lyrics linked.";
+      }
+
+      modal.style.display = "block";
+    }
+
+    function wireMetaModalClose() {
+      const modal = el("trackMetaModal");
+      const closeBtn = el("metaCloseBtn");
+
+      if (!modal || !closeBtn) return;
+
+      closeBtn.addEventListener("click", () => modal.style.display = "none");
+
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) modal.style.display = "none";
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") modal.style.display = "none";
       });
     }
 
@@ -1152,13 +1019,13 @@
         const t = allTracks[trackIndex];
         if (t && t.art) continue;
         await getCoverArtUrlFromId3(trackIndex);
-        const img = document.getElementById(`thumb-${trackIndex}`);
+        const img = document.getElementById(thumb-${trackIndex});
         if (img) await applyBestArtToImg(trackIndex, img);
       }
     }
 
     function probeOneTrackDuration(trackIndex) {
-      if (!isAudioAvailable(activeAlbumId)) return Promise.resolve(null);
+      if (!isTrackAudioAvailable(trackIndex)) return Promise.resolve(null);
       if (durationCacheSec.has(trackIndex)) return Promise.resolve(durationCacheSec.get(trackIndex));
 
       const t = allTracks[trackIndex];
@@ -1169,25 +1036,21 @@
         a.preload = "metadata";
         a.src = t.src;
 
-        const finish = (secOrNull) => resolve(secOrNull);
-
         a.addEventListener("loadedmetadata", () => {
           if (a.duration && !Number.isNaN(a.duration) && Number.isFinite(a.duration)) {
             const dur = Math.round(a.duration);
             durationCacheSec.set(trackIndex, dur);
-            finish(dur);
+            resolve(dur);
           } else {
-            finish(null);
+            resolve(null);
           }
         });
 
-        a.addEventListener("error", () => finish(null));
+        a.addEventListener("error", () => resolve(null));
       });
     }
 
     async function probeDurationsForActiveAlbumSequential() {
-      if (!isAudioAvailable(activeAlbumId)) return;
-
       const indices = getAlbumTrackIndices(activeAlbumId);
       if (!indices.length) return;
 
@@ -1197,7 +1060,7 @@
         const dur = await probeOneTrackDuration(trackIndex);
         if (dur) {
           totalSec += dur;
-          const durEl = document.getElementById(`dur-${trackIndex}`);
+          const durEl = document.getElementById(dur-${trackIndex});
           if (durEl) durEl.textContent = formatSeconds(dur);
         }
       }
@@ -1224,13 +1087,8 @@
       const cards = document.querySelectorAll(".album-card");
       cards.forEach(card => {
         const show = category === "all" || card.dataset.category === category;
-        if (show) {
-          card.style.display = "block";
-          card.style.opacity = "1";
-        } else {
-          card.style.opacity = "0";
-          setTimeout(() => { card.style.display = "none"; }, 200);
-        }
+        card.style.display = show ? "block" : "none";
+        card.style.opacity = show ? "1" : "0";
       });
     }
 
@@ -1238,6 +1096,7 @@
       e.preventDefault();
       const status = el("contactStatus");
       if (!status) return;
+
       status.classList.remove("hidden");
       status.textContent = "Message queued. This form is front-end only right now.";
       status.classList.add("text-gray-300");
@@ -1255,8 +1114,10 @@
         if (!href || !href.startsWith("#") || href.length === 1) return;
 
         e.preventDefault();
+
         const target = document.querySelector(href);
         if (target) target.scrollIntoView({ behavior: "smooth" });
+
         const mobileMenu = el("mobileMenu");
         if (mobileMenu && !mobileMenu.classList.contains("hidden")) mobileMenu.classList.add("hidden");
       });
@@ -1264,16 +1125,13 @@
 
     const mobileMenuBtn = el("mobileMenuBtn");
     const mobileMenu = el("mobileMenu");
+
     if (mobileMenuBtn && mobileMenu) {
       mobileMenuBtn.addEventListener("click", () => mobileMenu.classList.toggle("hidden"));
     }
 
     if (progressWrap) {
       progressWrap.addEventListener("click", (e) => {
-        if (!isAudioAvailable(activeAlbumId)) {
-          openStreaming(activeAlbumId);
-          return;
-        }
         const rect = progressWrap.getBoundingClientRect();
         const x = Math.min(rect.width, Math.max(0, e.clientX - rect.left));
         const ratio = rect.width ? x / rect.width : 0;
@@ -1286,6 +1144,7 @@
       volume.addEventListener("input", () => {
         audio.volume = Math.min(1, Math.max(0, Number(volume.value) / 100));
       });
+
       audio.volume = Number(volume.value) / 100;
     }
 
@@ -1297,31 +1156,25 @@
     window.addEventListener("scroll", () => {
       const scrolled = window.pageYOffset;
       const blobs = document.querySelectorAll("section#top .absolute.inset-0.opacity-30 > div");
+
       blobs.forEach((b, i) => {
         const factor = (i + 1) * 0.05;
-        b.style.transform = `translateY(${scrolled * factor}px)`;
+        b.style.transform = translateY(${scrolled * factor}px);
       });
     });
 
     document.addEventListener("DOMContentLoaded", async () => {
       await loadTrackMeta();
-      wireMetaModalClose();
+      await checkAllAudio();
 
-      // Probe each album independently.
-      await checkAudioAvailability();
+      wireMetaModalClose();
 
       setHero("label");
       buildTrackListForActiveAlbum();
       updateHeroStatsForActiveAlbum();
 
       warmThumbnailsForActiveAlbumSequential();
-
-      const anyAudio = Object.values(ALBUM_AUDIO_AVAILABLE).some(Boolean);
-      if (anyAudio) {
-        probeDurationsForActiveAlbumSequential();
-      } else {
-        applyStreamingModeUI();
-      }
+      probeDurationsForActiveAlbumSequential();
     });
   </script>
 </body>
